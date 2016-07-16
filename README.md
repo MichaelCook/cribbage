@@ -1,0 +1,2 @@
+# cribbage
+Analyze cribbage hands.
