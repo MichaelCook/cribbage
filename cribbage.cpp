@@ -47,13 +47,9 @@ bool operator==(Card const& a, Card const& b)
 
 struct Hand
 {
-  size_t num_cards;
+  size_t num_cards = 0;
   static constexpr size_t max_cards = 52;
   Card cards[max_cards];
-
-  Hand() : num_cards(0)
-  {
-  }
 
   size_t size() const
   {
@@ -204,11 +200,11 @@ int score_fifteens(Hand const& hand)
   auto e = hand.value(4);
   int num_15s = 0;
 
-  // five cards - c(5,5)=1
+  // five cards - C(5,5)=1
   if (a + b + c + d + e == 15)
     ++num_15s;
 
-  // four cards - c(5,4)=5
+  // four cards - C(5,4)=5
   if (a + b + c + d == 15)
     ++num_15s;
   if (a + b + c + e == 15)
@@ -220,7 +216,7 @@ int score_fifteens(Hand const& hand)
   if (b + c + d + e == 15)
     ++num_15s;
 
-  // three cards - c(5,3)=10
+  // three cards - C(5,3)=10
   if (a + b + c == 15)
     ++num_15s;
   if (a + b + d == 15)
@@ -242,7 +238,7 @@ int score_fifteens(Hand const& hand)
   if (c + d + e == 15)
     ++num_15s;
 
-  // two cards - c(5,2)=10
+  // two cards - C(5,2)=10
   if (a + b == 15)
     ++num_15s;
   if (a + c == 15)
@@ -283,9 +279,9 @@ int score_pairs(Hand const& hand)
   int num_pairs = 0;
   for (size_t i = 0; i < n - 1; ++i)
   {
-    auto& a = hand.card(i);
+    auto& card = hand.card(i);
     for (size_t j = i; ++j < n;) {
-      if (a.rank == hand.card(j).rank)
+      if (card.rank == hand.card(j).rank)
         ++num_pairs;
     }
   }
