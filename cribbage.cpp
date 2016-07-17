@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <cstddef>
 #include <cassert>
+#include <cmath>
 #include <stdexcept>
 #include <utility>
 #include <algorithm>
@@ -490,6 +491,56 @@ struct Tally
   }
 };
 
+struct Statistics
+{
+  double mean, stdev;
+  int min, max;
+
+  Statistics() = default;
+  Statistics(Tally const& t, int num_hands);
+};
+
+std::ostream& operator<<(std::ostream& os, Statistics const& st)
+{
+  return os << st.mean << ' ' << st.stdev
+            << ' ' << st.min << ".." << st.max;
+}
+
+Statistics::Statistics(Tally const& t, int num_hands)
+{
+  min = 0;
+  for (int score = 0; score <= Tally::max_score; ++score)
+    if (t.scores[score] != 0)
+    {
+      min = score;
+      break;
+    }
+
+  max = 0;
+  for (int score = Tally::max_score; score >= 0; --score)
+    if (t.scores[score] != 0)
+    {
+      max = score;
+      break;
+    }
+
+  double sum = 0;
+  for (int score = 0; score <= Tally::max_score; ++score)
+    sum += double(score) * t.scores[score];
+  mean = sum / num_hands;
+
+  double sumdev = 0;
+  for (int score = 0; score <= Tally::max_score; ++score)
+  {
+    auto n = t.scores[score];
+    if (n == 0)
+      continue; // as an optimization, skip this common case
+    auto d = score - mean;
+    sumdev += d * d * score;
+  }
+  stdev = sqrt(sumdev / num_hands);
+}
+
 void analyze_hand(Hand const& hand)
 {
   /*
@@ -552,7 +603,7 @@ void analyze_hand(Hand const& hand)
     if (verbose)
       cout << endl;
 
-    assert(num_hands == 15180); // C(46,3)=15180
+    assert(num_hands == 15180); // sanity check, expecting C(46,3)
 
     if (show_tallies)
     {
@@ -602,19 +653,25 @@ void analyze_hand(Hand const& hand)
       cout << " hand-crib\n";
     }
 
-    double if_my_crib = 0, if_their_crib = 0;
+    /* Calculate statistics (mean, standard deviation, min and max)
+       for both situations when it's my crib and when it's theirs. */
+    Tally sum, diff;
     for (int score = 0; score <= Tally::max_score; ++score)
     {
-      double sum = hold_tally.scores[score] + crib_tally.scores[score];
-      double diff = hold_tally.scores[score] - crib_tally.scores[score];
-      if_my_crib += sum * score;
-      if_their_crib += diff * score;
+      sum.scores[score] = hold_tally.scores[score] + crib_tally.scores[score];
+      diff.scores[score] = hold_tally.scores[score] - crib_tally.scores[score];
     }
+    Statistics if_mine(sum, num_hands);
+    Statistics if_theirs(diff, num_hands);
+
     cout << "Discard " << discard
          << ", average score "
          << std::fixed << std::setprecision(1)
-         << if_my_crib / num_hands << " (if your crib), or "
-         << if_their_crib / num_hands << " (if theirs).\n";
+         << if_mine.mean << " (if your crib), or "
+         << if_theirs.mean << " (if theirs)."
+         << " [" << if_mine << ']'
+         << " [" << if_theirs << ']'
+         << '\n';
 
     if (show_tallies)
       cout << '\n';
