@@ -665,6 +665,10 @@ void analyze_hand(Hand const& hand)
     Statistics if_mine(sum, num_hands);
     Statistics if_theirs(diff, num_hands);
 
+    cout << std::fixed << std::setprecision(2)
+         << std::setw(6) << if_mine.mean << ' '
+         << std::setw(6) << if_theirs.mean << ' ';
+
     cout << "Discard " << discard
          << ", average score "
          << std::fixed << std::setprecision(1)
