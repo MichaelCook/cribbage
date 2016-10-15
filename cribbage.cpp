@@ -706,6 +706,7 @@ void expect_equal(T a, U b, char const* as, char const* bs,
   expect_equal(A, B, #A, #B, __FILE__, __LINE__)
 
 int main(int argc, char** argv)
+try
 {
   // sanity checks
   EXPECT_EQUAL(score_hand("AH AS JH AC AD"), 12); // 4oak
@@ -715,11 +716,16 @@ int main(int argc, char** argv)
   EXPECT_EQUAL(score_hand("AH 3H 7S TH JH"), 0);  // 4 hearts but with cut
   EXPECT_EQUAL(score_hand("AH 2S 3C 5D JH"), 4 + 3); // 15/4 + run/3
   EXPECT_EQUAL(score_hand("7H 7S 7C 8D 8H"), 12 + 6 + 2); // 15/12 + 3oak + 2oak
-  EXPECT_EQUAL(score_hand("AH 2H 3H 3S 3D"), 15); // tripple run/3
-  EXPECT_EQUAL(score_hand("3H AH 3S 2H 3D"), 15); // tripple run/3
+  EXPECT_EQUAL(score_hand("AH 2H 3H 3S 3D"), 15); // triple run/3
+  EXPECT_EQUAL(score_hand("3H AH 3S 2H 3D"), 15); // triple run/3
   EXPECT_EQUAL(score_hand("5H 5C 5S JD 5D"), 29);
   EXPECT_EQUAL(score_hand("5H 5C 5S 5D JD"), 28);
 
   while (--argc >= 1)
     analyze_hand(*++argv);
+}
+catch (std::exception const& exc)
+{
+  std::clog << "Caught exception: " << exc.what() << std::endl;
+  return EXIT_FAILURE;
 }
