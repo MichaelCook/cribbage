@@ -178,10 +178,11 @@ Hand make_hand(char const* hand)
                                  "' at '" + std::string(s) + '\'');
       rank = c;
       break;
-    case ' ':
     case '-':
       break;
     default:
+      if (isspace((unsigned char) c))
+        break;
       throw std::runtime_error("Malformed hand '" + std::string(hand) +
                                "' at '" + std::string(s) + '\'');
     }
