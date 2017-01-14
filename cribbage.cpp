@@ -391,7 +391,7 @@ int score_runs(Hand const& hand)
   return score;
 }
 
-int score_same_suit(Hand const& hand)
+int score_flush(Hand const& hand, bool is_crib)
 {
   size_t n = hand.size();
   if (n != 5)
@@ -403,6 +403,9 @@ int score_same_suit(Hand const& hand)
   // first 4 are same suit
   if (suit == hand.card(4).suit)
     return 5;
+  // In the crib, a flush counts only if all five cards are the same suit.
+  if (is_crib)
+    return 0;
   return 4;
 }
 
@@ -422,18 +425,18 @@ int score_right_jack(Hand const& hand)
   return 0;
 }
 
-int score_hand(Hand const& hand)
+int score_hand(Hand const& hand, bool is_crib)
 {
   return score_fifteens(hand) +
          score_pairs(hand) +
          score_runs(hand) +
-         score_same_suit(hand) +
+         score_flush(hand, is_crib) +
          score_right_jack(hand);
 }
 
-int score_hand(char const* hand)
+int score_hand(char const* hand, bool is_crib)
 {
-  return score_hand(make_hand(hand));
+  return score_hand(make_hand(hand), is_crib);
 }
 
 // ---------------------------------------------------------------------------
@@ -584,8 +587,8 @@ void analyze_hand(Hand const& hand)
       crib.push_back(chosen.card(1));
       crib.push_back(cut);
 
-      auto hold_score = score_hand(hold);
-      auto crib_score = score_hand(crib);
+      auto hold_score = score_hand(hold, false);
+      auto crib_score = score_hand(crib, true);
 
       if (verbose)
         cout << "hold |" << hold << "|=" << hold_score
@@ -709,17 +712,19 @@ int main(int argc, char** argv)
 try
 {
   // sanity checks
-  EXPECT_EQUAL(score_hand("AH AS JH AC AD"), 12); // 4oak
-  EXPECT_EQUAL(score_hand("AH AS JH AC AH"), 13); // ...plus right jack
-  EXPECT_EQUAL(score_hand("AH 3H 7H TH JH"), 5);  // 5 hearts
-  EXPECT_EQUAL(score_hand("AH 3H 7H TH JS"), 4);  // 4 hearts
-  EXPECT_EQUAL(score_hand("AH 3H 7S TH JH"), 0);  // 4 hearts but with cut
-  EXPECT_EQUAL(score_hand("AH 2S 3C 5D JH"), 4 + 3); // 15/4 + run/3
-  EXPECT_EQUAL(score_hand("7H 7S 7C 8D 8H"), 12 + 6 + 2); // 15/12 + 3oak + 2oak
-  EXPECT_EQUAL(score_hand("AH 2H 3H 3S 3D"), 15); // triple run/3
-  EXPECT_EQUAL(score_hand("3H AH 3S 2H 3D"), 15); // triple run/3
-  EXPECT_EQUAL(score_hand("5H 5C 5S JD 5D"), 29);
-  EXPECT_EQUAL(score_hand("5H 5C 5S 5D JD"), 28);
+  EXPECT_EQUAL(score_hand("AH AS JH AC AD", false), 12); // 4oak
+  EXPECT_EQUAL(score_hand("AH AS JH AC AH", false), 13); // ...plus right jack
+  EXPECT_EQUAL(score_hand("AH 3H 7H TH JH", false), 5);  // 5 hearts
+  EXPECT_EQUAL(score_hand("AH 3H 7H TH JH", true), 5);   // 5 hearts but crib
+  EXPECT_EQUAL(score_hand("AH 3H 7H TH JS", false), 4);  // 4 hearts
+  EXPECT_EQUAL(score_hand("AH 3H 7S TH JH", false), 0);  // 4 hearts but with cut
+  EXPECT_EQUAL(score_hand("AH 3H 7H TH JS", true), 0);   // 4 hearts but crib
+  EXPECT_EQUAL(score_hand("AH 2S 3C 5D JH", false), 4 + 3); // 15/4 + run/3
+  EXPECT_EQUAL(score_hand("7H 7S 7C 8D 8H", false), 12 + 6 + 2); // 15/12 + 3oak + 2oak
+  EXPECT_EQUAL(score_hand("AH 2H 3H 3S 3D", false), 15); // triple run/3
+  EXPECT_EQUAL(score_hand("3H AH 3S 2H 3D", false), 15); // triple run/3
+  EXPECT_EQUAL(score_hand("5H 5C 5S JD 5D", false), 29);
+  EXPECT_EQUAL(score_hand("5H 5C 5S 5D JD", false), 28);
 
   while (--argc >= 1)
     analyze_hand(*++argv);
