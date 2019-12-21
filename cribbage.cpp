@@ -1,3 +1,5 @@
+/* Copyright (c) 2016, Michael Cook <michael@waxrat.com>. All rights reserved. */
+
 /*
 
   opt="-O0         "; g++ -Wall -Werror -std=c++11 $opt cribbage.cpp && ./a.out 7c9h5h5c5djs
