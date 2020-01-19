@@ -1,13 +1,5 @@
 /* Copyright (c) 2016, Michael Cook <michael@waxrat.com>. All rights reserved. */
 
-/*
-
-  opt="-O0         "; g++ -Wall -Werror -std=c++11 $opt cribbage.cpp && ./a.out 7c9h5h5c5djs
-  opt="-O3 -DNDEBUG"; g++ -Wall -Werror -std=c++11 $opt cribbage.cpp && ./a.out 7c9h5h5c5djs
-
-  ./a.out "2H 2C 2D 9S QH QC" "3H 3C 8D 7S 5H 2C"
-*/
-
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -16,6 +8,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <utility>
+#include <cstring>
 
 using std::cout;
 using std::endl;
@@ -23,13 +16,9 @@ using std::endl;
 using Rank = int; // 'A', '2', '3', ..., 'J', 'Q', 'K'
 using Suit = int; // 'S', 'D', 'C', 'H'
 
-constexpr bool show_tallies = false;
-constexpr bool verbose_score = false;
-#ifdef NDEBUG
-constexpr bool verbose = false;
-#else
-constexpr bool verbose = true;
-#endif
+bool show_tallies = false;
+bool verbose_score = false;
+bool verbose = false;
 
 struct Card {
   Rank rank;
@@ -541,8 +530,7 @@ void analyze_hand(Hand const &hand) {
     Tally hold_tally, crib_tally;
     int num_hands = 0;
     for_each_choice(deck, 3, // C(46,3)=15180
-    [&deck, &keep, &discard,
-     &hold_tally, &crib_tally, &num_hands](Hand const& chosen)
+    [&keep, &discard, &hold_tally, &crib_tally, &num_hands](Hand const& chosen)
     {
       if (verbose)
         cout << "draw |" << chosen << "|\n";
@@ -671,6 +659,18 @@ void expect_equal(T a, U b, char const *as, char const *bs, char const *file,
 
 int main(int argc, char **argv)
 try {
+
+  while (auto arg = *++argv) {
+    if (strcmp(arg, "--show-tallies") == 0)
+      show_tallies = true;
+    else if (strcmp(arg, "--verbose-score") == 0)
+      verbose_score = true;
+    else if (strcmp(arg, "--verbose") == 0)
+      verbose = true;
+    else
+      break;
+  }
+
   // sanity checks
   EXPECT_EQUAL(score_hand("AH AS JH AC AD", false), 12); // 4oak
   EXPECT_EQUAL(score_hand("AH AS JH AC AH", false), 13); // ...plus right jack
@@ -686,8 +686,9 @@ try {
   EXPECT_EQUAL(score_hand("5H 5C 5S JD 5D", false), 29);
   EXPECT_EQUAL(score_hand("5H 5C 5S 5D JD", false), 28);
 
-  while (--argc >= 1)
-    analyze_hand(*++argv);
+  while (*argv)
+    analyze_hand(*argv++);
+
 } catch (std::exception const &exc) {
   std::clog << "Caught exception: " << exc.what() << std::endl;
   return EXIT_FAILURE;
