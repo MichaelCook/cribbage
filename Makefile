@@ -6,6 +6,7 @@ CXXFLAGS = \
   -Weverything \
   -Wno-c++98-compat \
   -std=c++11 \
+  -fsanitize=address \
 
 .PHONY: all
 all:
