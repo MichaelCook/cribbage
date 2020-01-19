@@ -2,8 +2,9 @@ CXX = clang++
 
 CXXFLAGS = \
   -O3 \
-  -Wall \
   -Werror \
+  -Weverything \
+  -Wno-c++98-compat \
   -std=c++11 \
 
 .PHONY: all

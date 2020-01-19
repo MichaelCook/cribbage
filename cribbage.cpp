@@ -10,6 +10,8 @@
 #include <utility>
 #include <cstring>
 
+namespace {
+
 using std::cout;
 using std::endl;
 
@@ -146,7 +148,7 @@ Hand make_hand(char const *hand) {
   Rank rank = 0;
   auto s = hand;
   while (*s) {
-    char c = std::toupper(*s);
+    auto c = std::toupper(*s);
     switch (c) {
     case 'H':
     case 'C':
@@ -179,7 +181,7 @@ Hand make_hand(char const *hand) {
     case '-':
       break;
     default:
-      if (isspace((unsigned char)c))
+      if (isspace(static_cast<unsigned char>(c)))
         break;
       throw std::runtime_error("Malformed hand '" + std::string(hand) +
                                "' at '" + std::string(s) + '\'');
@@ -467,7 +469,7 @@ struct Statistics {
   double mean, stdev;
   int min, max;
 
-  Statistics() = default;
+  Statistics() = delete;
   Statistics(Tally const &t, int num_hands);
 };
 
@@ -654,10 +656,12 @@ void expect_equal(T a, U b, char const *as, char const *bs, char const *file,
               << endl;
 }
 
+} // namespace
+
 #define EXPECT_EQUAL(A, B) \
   expect_equal(A, B, #A, #B, __FILE__, __LINE__)
 
-int main(int argc, char **argv)
+int main(int, char **argv)
 try {
 
   while (auto arg = *++argv) {
