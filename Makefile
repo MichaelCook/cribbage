@@ -3,9 +3,10 @@ CXX = clang++
 CXXFLAGS = \
   -O3 \
   -Werror \
+  -Wpedantic \
   -Weverything \
   -Wno-c++98-compat \
-  -std=c++11 \
+  -std=c++2a \
   -fsanitize=address \
 
 .PHONY: all
