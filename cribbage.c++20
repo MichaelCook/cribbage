@@ -2,6 +2,8 @@
 
 // Copyright (c) Michael Cook <michael@waxrat.com>. All rights reserved
 
+// https://godbolt.org/z/xZkxvt
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -12,6 +14,7 @@
 #include <utility>
 #include <cstring>
 #include <compare>
+#include <string_view>
 
 namespace {
 
@@ -154,22 +157,20 @@ constexpr bool is_space(char c) // std::isspace is not constexpr
     return c == ' ';
 }
 
-constexpr Hand make_hand(char const *hand) {
+constexpr Hand make_hand(std::string_view hand) {
   if (verbose)
     cout << __func__ << ": |" << hand << '|' << endl;
   Hand h;
   Rank rank = 0;
-  auto s = hand;
-  while (*s) {
-    auto c = to_upper(*s);
+  for (auto c : hand) {
+    c = to_upper(c);
     switch (c) {
     case 'H':
     case 'C':
     case 'S':
     case 'D':
       if (rank == 0)
-        throw std::runtime_error("Malformed hand '" + std::string(hand) +
-                                 "' at '" + std::string(s) + '\'');
+        throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
       h.push_back(Card(rank, c));
       rank = 0;
       break;
@@ -187,8 +188,7 @@ constexpr Hand make_hand(char const *hand) {
     case 'Q':
     case 'K':
       if (rank != 0)
-        throw std::runtime_error("Malformed hand '" + std::string(hand) +
-                                 "' at '" + std::string(s) + '\'');
+        throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
       rank = c;
       break;
     case '-':
@@ -196,10 +196,8 @@ constexpr Hand make_hand(char const *hand) {
     default:
       if (is_space(c))
         break;
-      throw std::runtime_error("Malformed hand '" + std::string(hand) +
-                               "' at '" + std::string(s) + '\'');
+      throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
     }
-    ++s;
   }
   if (verbose)
     cout << __func__ << ": |" << h << '|' << endl;
@@ -429,7 +427,7 @@ constexpr int score_hand(Hand const &hand, bool is_crib) {
          score_right_jack(hand);
 }
 
-constexpr int score_hand(char const *hand, bool is_crib) {
+constexpr int score_hand(std::string_view hand, bool is_crib) {
   return score_hand(make_hand(hand), is_crib);
 }
 
@@ -671,7 +669,7 @@ void analyze_hand(Hand const &hand) {
   cout << '\n';
 }
 
-void analyze_hand(char const* hand) {
+void analyze_hand(std::string_view hand) {
   analyze_hand(make_hand(hand));
 }
 
