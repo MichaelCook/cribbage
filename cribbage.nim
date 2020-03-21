@@ -437,7 +437,7 @@ proc analyze_hand(hand: Hand) =
   # Find all possible pairs of cards to discard to the crib.
   # There are C(6,2)=15 possible discards in a cribbage hand.
 
-  let total_num_hands = for_each_choice(hand, 2, proc (discarding: Hand) =
+  discard for_each_choice(hand, 2, proc (discarding: Hand) =
     var keeping: Hand
     for i in 0 ..< hand.num_cards:
       let card = hand.cards[i]
