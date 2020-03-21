@@ -35,3 +35,10 @@ The numbers in brackets (e.g., [12.9 0.6 2..21]) show the mean, standard
 deviation, minimum and maximum scores.  The first set of numbers is for when
 the crib is yours; the second set, the crib is your opponent's.  (A smaller
 standard deviation means you're more likely to get the average score.)
+
+There's also a Nim language implementation.
+
+```
+$ nim --opt:speed c cribbage.nim
+$ ./cribbage 7c9h5h5c5djs
+```

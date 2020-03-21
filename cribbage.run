@@ -1,0 +1,3 @@
+#!/bin/bash
+nim --verbosity:0 --hints:off --opt:speed c cribbage.nim || exit
+./cribbage 7c9h5h5c5djs "2H 2C 2D 9S QH QC" "3H 3C 8D 7S 5H 2C"
