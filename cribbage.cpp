@@ -499,9 +499,6 @@ Statistics::Statistics(Tally const &t, int num_hands) {
 
   double sumdev = 0;
   for (int score = 0; score <= Tally::max_score; ++score) {
-    auto n = t.scores[score];
-    if (n == 0)
-      continue; // as an optimization, skip this common case
     auto d = score - mean;
     sumdev += d * d * score;
   }
