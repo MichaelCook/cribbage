@@ -33,7 +33,7 @@ type
 
   Hand = object
     num_cards: int
-    # [0..3] are the four cards dealt the hand after discard and [4] is the
+    # [0..3] are the four cards in the hand after discard and [4] is the
     # cut card, or
     # [0..5] are the six cards dealt into the hand, or
     # [0..51] an entire deck.
