@@ -7,7 +7,7 @@ Example:
 
 ```
 $ g++ -std=c++11 -O3 -DNDEBUG cribbage.cpp
-$ ./a.out 7c9h5h5c5djs
+$ ./a.out "7C 9H 5H 5C 5D JS"
 [ 7C 9H 5H 5C 5D JS ]
 Discard 7C 9H, average score 21.8 (if your crib), or 13.4 (if theirs). [21.8 1.1 0..29] [13.4 1.0 0..29]
 Discard 7C 5H, average score 15.6 (if your crib), or 3.2 (if theirs). [15.6 0.5 2..16] [3.2 0.8 2..16]
