@@ -36,7 +36,7 @@ type
     # [0..3] are the four cards in the hand after discard and [4] is the
     # cut card, or
     # [0..5] are the six cards dealt into the hand, or
-    # [0..51] an entire deck.
+    # [0..51] is an entire deck.
     slots: array[52, Card]
 
 proc cards(hand: Hand): seq[Card] =
@@ -108,11 +108,13 @@ proc make_hand(s: string): Hand =
 
   return hand
 
-assert "5H 5C 5S JD 5D" == $make_hand("5H 5C-5S-JD 5D")
+assert "5H 5C 5S JD 5D" == $make_hand("5H 5C 5S JD 5D")
 assert "5H 5C 5S JD 5D" == $make_hand("5h5c5sjd5d")
-assert "AH AS JH AC AD" == $make_hand("ah as jh ac ad")
+assert "AH AS JH AC AD" == $make_hand("ah-as-jh-ac-ad")
 
 proc score_fifteens(hand: Hand): int =
+  assert hand.num_cards == 5
+
   let
     a = hand.value(0)
     b = hand.value(1)
@@ -206,7 +208,7 @@ assert 8 == score_pairs(make_hand("TS 5S 5C 5D TH"))
 proc score_runs(hand: Hand): int =
   assert hand.num_cards == 5
 
-  # Make an ordered sequence of the orders of the cards in the hand.
+  # Make a sorted sequence of the orders of the cards in the hand.
   # The order of Ace is 1, Two is 2, ..., Ten is 10, Jack is 11,
   # Queen is 12, # King is 13.
   var orders = map(hand.cards, proc (card: Card): int =
@@ -261,7 +263,7 @@ proc score_runs(hand: Hand): int =
   return 0
 
 assert 9 == score_runs(make_hand("AH 2H 3H 3D 3C"))
-assert 9 == score_runs(make_hand("KH KD KC JH QH"))  # same pattern
+assert 9 == score_runs(make_hand("KH KD KC JH QH"))  # same pattern A2333
 assert 9 == score_runs(make_hand("AH 2H 2D 2C 3H"))
 assert 9 == score_runs(make_hand("AH AD AC 2H 3H"))
 assert 8 == score_runs(make_hand("AH 2H 3H 4H 4D"))
@@ -301,7 +303,8 @@ assert 4 == score_flush(make_hand("5H 6H 7H 8H 9D"), false)
 assert 0 == score_flush(make_hand("5H 6H 7H 8H 9D"), true)
 assert 0 == score_flush(make_hand("5H 6H 7H 8D 9D"), false)
 
-proc score_right_jack(hand: Hand): int =
+proc score_nobs(hand: Hand): int =
+  # nobs: one point for the Jack of the same suit as the cut card
   assert hand.num_cards == 5
   let cut_suit = hand.cards[4].suit
   for card in hand.cards[0..3]:
@@ -309,15 +312,15 @@ proc score_right_jack(hand: Hand): int =
       return 1
   return 0
 
-assert 1 == score_right_jack(make_hand("JH 2C 3C 4C 5H"))
-assert 0 == score_right_jack(make_hand("JH 2C 3C 4C 5C"))
+assert 1 == score_nobs(make_hand("JH 2C 3C 4C 5H"))
+assert 0 == score_nobs(make_hand("JH 2C 3C 4C 5C"))
 
 proc score_hand(hand: Hand, is_crib: bool): int =
   return score_fifteens(hand) +
          score_pairs(hand) +
          score_runs(hand) +
          score_flush(hand, is_crib) +
-         score_right_jack(hand)
+         score_nobs(hand)
 
 proc score_hand(hand: string, is_crib: bool): int =
   return score_hand(make_hand(hand), is_crib)
@@ -359,33 +362,13 @@ proc for_each_choice_helper(hand: Hand,
 
 proc for_each_choice(hand: Hand, num_choose: int,
                      fun: proc(choice: Hand)): int =
+  # Find each of the possible combinations of `num_choose` cards
+  # from `hand`.  Invoke the function `fun` for each combination
   var chosen: Hand
   return for_each_choice_helper(hand, 0, num_choose, chosen, fun)
 
-#block:
-#  var deck: Hand
-#  deck.push_back(Card(rank: Rank.Ace, suit: Suit.Heart))
-#  deck.push_back(Card(rank: Rank.Two, suit: Suit.Heart))
-#  deck.push_back(Card(rank: Rank.Three, suit: Suit.Heart))
-#  deck.push_back(Card(rank: Rank.Four, suit: Suit.Heart))
-#  deck.push_back(Card(rank: Rank.Five, suit: Suit.Heart))
-#  echo "deck: ", deck
-#  echo for_each_choice(deck, 3, proc (choice: Hand) =
-#                                  echo "> ", choice)
-#  echo "--done--"
-#  echo for_each_choice(deck, 2, proc (choice: Hand) =
-#                                  echo "> ", choice)
-#  echo "--done--"
-#  echo for_each_choice(deck, 1, proc (choice: Hand) =
-#                                  echo "> ", choice)
-#  echo "--done--"
-#  echo for_each_choice(deck, 4, proc (choice: Hand) =
-#                                  echo "> ", choice)
-#  echo "--done--"
-#  echo for_each_choice(deck, 5, proc (choice: Hand) =
-#                                  echo "> ", choice)
-
 proc make_deck(exclude: Hand): Hand =
+  # Make an entire deck of cards but leave out any cards in `exclude`
   var deck: Hand
   for suit in Suit:
     for rank in Rank:
@@ -407,22 +390,24 @@ type
 proc `$`(st: Statistics): string =
   return fmt"{st.mean:.1f} {st.stdev:.1f} {st.min}..{st.max}"
 
-proc make_statistics(t: Tally, num_hands: int): Statistics =
+proc make_statistics(tally: Tally, num_hands: int): Statistics =
+  # Convert `tally` to a Statistics object.  `tally` is the number of times
+  # each score 0..29 was achieved over `num_hands` hands.
   var min = 0
   for score in 0..max_score:
-    if t.scores[score] != 0:
+    if tally.scores[score] != 0:
       min = score
       break
 
   var max = 0
   for score in countdown(max_score, 0):
-    if t.scores[score] != 0:
+    if tally.scores[score] != 0:
       max = score
       break
 
   var sum = 0.0
   for score in 0..max_score:
-    sum += float(score * t.scores[score])
+    sum += float(score * tally.scores[score])
   let mean = sum / float(num_hands)
 
   var sumdev = 0.0
@@ -466,7 +451,7 @@ proc analyze_hand(hand: Hand) =
     assert num_hands == 15180 # sanity check, expecting C(46,3)
 
     # Calculate statistics (mean, standard deviation, min and max)
-    # for both situations when it's my crib and when it's theirs.
+    # for both situations: when the crib is mine and when it's not
     var sum, diff: Tally
     for score in 0..max_score:
       sum.scores[score] = hold_tally.scores[score] + crib_tally.scores[score]
