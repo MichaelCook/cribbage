@@ -341,31 +341,28 @@ assert 28 == score_hand("5H 5C 5S 5D JD", false)
 
 # ---------------------------------------------------------------------------
 
-proc for_each_choice_helper(hand: Hand,
-                            offset: int,
-                            num_choose: int,
-                            chosen: var Hand,
-                            fun: proc(choice: Hand)): int =
-  if chosen.num_cards == num_choose:
-    fun(chosen)
-    return 1
-
+# Iterate over all of the ways of choosing `num_choose` cards
+# from the given hand `hand`.
+iterator choose(hand: Hand, num_choose: int): Hand =
   var
-    i = offset
-    num_hands = 0
-  while i != hand.num_cards:
-    chosen.push_back(hand.cards[i])
-    inc i
-    num_hands += for_each_choice_helper(hand, i, num_choose, chosen, fun)
-    chosen.pop_back()
-  return num_hands
+    chosen: Hand
+    i = 0
+    i_stack = newSeqOfCap[int](num_choose)
 
-proc for_each_choice(hand: Hand, num_choose: int,
-                     fun: proc(choice: Hand)): int =
-  # Find each of the possible combinations of `num_choose` cards
-  # from `hand`.  Invoke the function `fun` for each combination
-  var chosen: Hand
-  return for_each_choice_helper(hand, 0, num_choose, chosen, fun)
+  while true:
+    if chosen.num_cards == num_choose:
+      yield chosen
+      chosen.pop_back()
+      i = i_stack.pop() + 1
+    elif i != hand.num_cards:
+      chosen.push_back(hand.cards[i])
+      i_stack.add(i)
+      inc i
+    elif i_stack.len > 0:
+      chosen.pop_back()
+      i = i_stack.pop() + 1
+    else:
+      break
 
 proc make_deck(exclude: Hand): Hand =
   # Make an entire deck of cards but leave out any cards in `exclude`
@@ -422,7 +419,7 @@ proc analyze_hand(hand: Hand) =
   # Find all possible pairs of cards to discard to the crib.
   # There are C(6,2)=15 possible discards in a cribbage hand.
 
-  discard for_each_choice(hand, 2, proc (discarding: Hand) =
+  for discarding in choose(hand, 2):
     var keeping: Hand
     for i in 0 ..< hand.num_cards:
       let card = hand.cards[i]
@@ -431,7 +428,9 @@ proc analyze_hand(hand: Hand) =
 
     let deck = make_deck(hand)
     var hold_tally, crib_tally: Tally
-    let num_hands = for_each_choice(deck, 3, proc (chosen: Hand) =
+    var num_hands = 0
+    for chosen in choose(deck, 3):
+        inc num_hands
         let cut = chosen.cards[2]
 
         var hold = keeping
@@ -447,7 +446,7 @@ proc analyze_hand(hand: Hand) =
 
         inc hold_tally.scores[hold_score]
         inc crib_tally.scores[crib_score]
-    )
+
     assert num_hands == 15180 # sanity check, expecting C(46,3)
 
     # Calculate statistics (mean, standard deviation, min and max)
@@ -467,7 +466,6 @@ proc analyze_hand(hand: Hand) =
          fmt"or {if_theirs.mean:.1f} (if theirs).",
          fmt" [{if_mine}]",
          fmt" [{if_theirs}]"
-  )
 
 # ---------------------------------------------------------------------------
 
