@@ -374,11 +374,13 @@ proc make_deck(exclude: Hand): Hand =
         deck.push_back(card)
   return deck
 
-const max_score = 29
+const max_score = 29 * 2
+const min_score = -max_score
+const num_scores = max_score - min_score + 1
 
 type
   Tally = object
-    scores: array[max_score + 1, int]
+    scores: array[num_scores, int]
 
   Statistics = object
     mean, stdev: float
@@ -391,26 +393,26 @@ proc make_statistics(tally: Tally, num_hands: int): Statistics =
   # Convert `tally` to a Statistics object.  `tally` is the number of times
   # each score 0..29 was achieved over `num_hands` hands.
   var min = 0
-  for score in 0..max_score:
-    if tally.scores[score] != 0:
+  for score in min_score..max_score:
+    if tally.scores[score - min_score] != 0:
       min = score
       break
 
   var max = 0
-  for score in countdown(max_score, 0):
-    if tally.scores[score] != 0:
+  for score in countdown(max_score, min_score):
+    if tally.scores[score - min_score] != 0:
       max = score
       break
 
   var sum = 0.0
-  for score in 0..max_score:
-    sum += float(score * tally.scores[score])
+  for score in min..max:
+    sum += float(score * tally.scores[score - min_score])
   let mean = sum / float(num_hands)
 
   var sumdev = 0.0
-  for score in 0..max_score:
+  for score in min..max:
     let d = float(score) - mean
-    sumdev += d * d * float(score)
+    sumdev += d * d
   let stdev = sqrt(sumdev / float(num_hands))
 
   return Statistics(mean: mean, stdev: stdev, min: min, max: max)
@@ -427,45 +429,37 @@ proc analyze_hand(hand: Hand) =
         keeping.push_back(card)
 
     let deck = make_deck(hand)
-    var hold_tally, crib_tally: Tally
+    var mine_tally: Tally       # scores when the crib is mine
+    var theirs_tally: Tally     # scores then the crib is theirs
     var num_hands = 0
     for chosen in choose(deck, 3):
-        inc num_hands
-        let cut = chosen.cards[2]
+      inc num_hands
+      let cut = chosen.cards[2]
 
-        var hold = keeping
-        hold.push_back(cut)
+      var hold = keeping
+      hold.push_back(cut)
 
-        var crib = discarding
-        crib.push_back(chosen.cards[0])
-        crib.push_back(chosen.cards[1])
-        crib.push_back(cut)
+      var crib = discarding
+      crib.push_back(chosen.cards[0])
+      crib.push_back(chosen.cards[1])
+      crib.push_back(cut)
 
-        let hold_score = score_hand(hold, false)
-        let crib_score = score_hand(crib, true)
+      let hold_score = score_hand(hold, false)
+      let crib_score = score_hand(crib, true)
 
-        inc hold_tally.scores[hold_score]
-        inc crib_tally.scores[crib_score]
+      let mine_score = hold_score + crib_score
+      let theirs_score = hold_score - crib_score
+
+      inc mine_tally.scores[mine_score - min_score]
+      inc theirs_tally.scores[theirs_score - min_score]
 
     assert num_hands == 15180 # sanity check, expecting C(46,3)
 
-    # Calculate statistics (mean, standard deviation, min and max)
-    # for both situations: when the crib is mine and when it's not
-    var sum, diff: Tally
-    for score in 0..max_score:
-      sum.scores[score] = hold_tally.scores[score] + crib_tally.scores[score]
-      diff.scores[score] = hold_tally.scores[score] - crib_tally.scores[score]
-
     let
-      if_mine = make_statistics(sum, num_hands)
-      if_theirs = make_statistics(diff, num_hands)
+      if_mine = make_statistics(mine_tally, num_hands)
+      if_theirs = make_statistics(theirs_tally, num_hands)
 
-    echo fmt"{if_mine.mean:6.2f} {if_theirs.mean:6.2f} ",
-         fmt"Discard {discarding}, ",
-         fmt"average score {if_mine.mean:.1f} (if your crib), ",
-         fmt"or {if_theirs.mean:.1f} (if theirs).",
-         fmt" [{if_mine}]",
-         fmt" [{if_theirs}]"
+    echo fmt"{discarding} [{if_mine}] [{if_theirs}]"
 
 # ---------------------------------------------------------------------------
 

@@ -484,11 +484,19 @@ constexpr Hand make_deck(Hand const &exclude) {
 }
 
 struct [[nodiscard]] Tally {
-  static constexpr int max_score = 29;
-  int scores[max_score + 1];
-  constexpr Tally()
+  static constexpr int max_score = 29 * 2;
+  static constexpr int min_score = -max_score;
+  static constexpr size_t size = max_score - min_score + 1;
+  int scores[size];
+  void increment(int score)
   {
-    std::fill(scores, scores + max_score + 1, 0);
+    int i = score - min_score;
+    assert(i >= 0 && size_t(i) < size);
+    ++scores[i];
+  }
+  Tally()
+  {
+    std::fill(scores, scores + size, 0);
   }
 };
 
@@ -508,31 +516,28 @@ std::ostream &operator<<(std::ostream &os, Statistics const &st) {
 
 constexpr Statistics::Statistics(Tally const &t, int num_hands) {
   min = 0;
-  for (int score = 0; score <= Tally::max_score; ++score)
-    if (t.scores[score] != 0) {
-      min = score;
+  for (int i = 0; size_t(i) < Tally::size; ++i)
+    if (t.scores[i] != 0) {
+      min = i + Tally::min_score;
       break;
     }
 
   max = 0;
-  for (int score = Tally::max_score; score >= 0; --score)
-    if (t.scores[score] != 0) {
-      max = score;
+  for (int i = Tally::size; --i >= 0;)
+    if (t.scores[i] != 0) {
+      max = i + Tally::min_score;
       break;
     }
 
   double sum = 0;
-  for (int score = 0; score <= Tally::max_score; ++score)
-    sum += double(score) * t.scores[score];
+  for (int score = min; score <= max; ++score)
+    sum += double(score) * t.scores[score - Tally::min_score];
   mean = sum / num_hands;
 
   double sumdev = 0;
-  for (int score = 0; score <= Tally::max_score; ++score) {
-    auto n = t.scores[score];
-    if (n == 0)
-      continue; // as an optimization, skip this common case
+  for (int score = min; score <= max; ++score) {
     auto d = score - mean;
-    sumdev += d * d * score;
+    sumdev += d * d;
   }
   stdev = sqrt(sumdev / num_hands);
 }
@@ -558,10 +563,11 @@ void analyze_hand(Hand const &hand) {
     Hand deck{ make_deck(hand) };
     if (verbose)
       cout << "deck [" << deck.size() << "] |" << deck << "|\n";
-    Tally hold_tally, crib_tally;
+    Tally mine_tally;           // scores when the crib is mine
+    Tally theirs_tally;         // scores then the crib is theirs
     int num_hands = 0;
     for_each_choice(deck, 3, // C(46,3)=15180
-    [&keep, &discard, &hold_tally, &crib_tally, &num_hands](Hand const& chosen)
+    [&keep, &discard, &mine_tally, &theirs_tally, &num_hands](Hand const& chosen)
     {
       if (verbose)
         cout << "draw |" << chosen << "|\n";
@@ -578,18 +584,21 @@ void analyze_hand(Hand const &hand) {
       auto hold_score = score_hand(hold, false);
       auto crib_score = score_hand(crib, true);
 
+      auto mine_score = hold_score + crib_score;
+      auto theirs_score = hold_score - crib_score;
+
       if (verbose)
         cout << "hold |" << hold << "|=" << hold_score
              << ", crib |" << crib << "|=" << crib_score
+             << ' ' << mine_score
+             << ' ' << theirs_score
+             << (mine_score == 0 || theirs_score == 0 ? " *" : "")
              << '\n';
 
       ++num_hands;
 
-      assert(hold_score <= Tally::max_score);
-      ++hold_tally.scores[hold_score];
-
-      assert(crib_score <= Tally::max_score);
-      ++crib_tally.scores[crib_score];
+      mine_tally.increment(mine_score);
+      theirs_tally.increment(theirs_score);
     });
 
     if (verbose)
@@ -599,69 +608,36 @@ void analyze_hand(Hand const &hand) {
 
     if (show_tallies) {
       // column header
-      for (int score = 0; score <= Tally::max_score; ++score)
+      for (int score = Tally::min_score; score <= Tally::max_score; ++score)
         cout << ' ' << std::setw(5) << score;
       cout << '\n';
 
-      for (int score = 0; score <= Tally::max_score; ++score) {
-        auto n = hold_tally.scores[score];
+      for (int score = Tally::min_score; score <= Tally::max_score; ++score) {
+        auto n = mine_tally.scores[score - Tally::min_score];
         if (n)
           cout << ' ' << std::setw(5) << n;
         else
           cout << "      ";
       }
-      cout << " hand\n";
+      cout << " mine\n";
 
-      for (int score = 0; score <= Tally::max_score; ++score) {
-        auto n = crib_tally.scores[score];
+      for (int score = Tally::min_score; score <= Tally::max_score; ++score) {
+        auto n = theirs_tally.scores[score - Tally::min_score];
         if (n)
           cout << ' ' << std::setw(5) << n;
         else
           cout << "      ";
       }
-      cout << " crib\n";
-
-      for (int score = 0; score <= Tally::max_score; ++score) {
-        auto n = hold_tally.scores[score] + crib_tally.scores[score];
-        if (n)
-          cout << ' ' << std::setw(5) << n;
-        else
-          cout << "      ";
-      }
-      cout << " hand+crib\n";
-
-      for (int score = 0; score <= Tally::max_score; ++score) {
-        auto n = hold_tally.scores[score] - crib_tally.scores[score];
-        if (n)
-          cout << ' ' << std::setw(5) << n;
-        else
-          cout << "      ";
-      }
-      cout << " hand-crib\n";
+      cout << " theirs\n";
     }
 
     /* Calculate statistics (mean, standard deviation, min and max)
        for both situations when it's my crib and when it's theirs. */
-    Tally sum, diff;
-    for (int score = 0; score <= Tally::max_score; ++score) {
-      sum.scores[score] = hold_tally.scores[score] + crib_tally.scores[score];
-      diff.scores[score] = hold_tally.scores[score] - crib_tally.scores[score];
-    }
-    Statistics if_mine(sum, num_hands);
-    Statistics if_theirs(diff, num_hands);
+    Statistics if_mine(mine_tally, num_hands);
+    Statistics if_theirs(theirs_tally, num_hands);
 
-    cout << std::fixed << std::setprecision(2)
-         << std::setw(6) << if_mine.mean << ' '
-         << std::setw(6) << if_theirs.mean << ' ';
-
-    cout << "Discard " << discard
-         << ", average score "
-         << std::fixed << std::setprecision(1)
-         << if_mine.mean << " (if your crib), or "
-         << if_theirs.mean << " (if theirs)."
-         << " [" << if_mine << ']'
-         << " [" << if_theirs << ']'
-         << '\n';
+    cout << std::setprecision(2)
+         << discard << " [" << if_mine << ']' << " [" << if_theirs << "]\n";
 
     if (show_tallies)
       cout << '\n';
