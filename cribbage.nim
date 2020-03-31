@@ -190,6 +190,7 @@ proc score_fifteens(hand: Hand): int =
 assert 4 == score_fifteens(make_hand("AH 2H 3H JH QH"))
 assert 8 == score_fifteens(make_hand("5H 2H 3H JH QH"))
 assert 16 == score_fifteens(make_hand("5H 5S 5C 5D TH"))
+assert 8 == score_fifteens(make_hand("6C 6D 4D 4S 5D"))
 
 proc score_pairs(hand: Hand): int =
   var
@@ -204,6 +205,7 @@ proc score_pairs(hand: Hand): int =
 
 assert 12 == score_pairs(make_hand("5H 5S 5C 5D TH"))
 assert 8 == score_pairs(make_hand("TS 5S 5C 5D TH"))
+assert 4 == score_pairs(make_hand("6C 6D 4D 4S 5D"))
 
 proc score_runs(hand: Hand): int =
   assert hand.num_cards == 5
@@ -222,25 +224,26 @@ proc score_runs(hand: Hand): int =
 
   let X = -1 # match any rank
   let patterns = [
-    Pattern(score: 9, delta: [ 1, 1, 0, 0 ]), # A2333
-    Pattern(score: 9, delta: [ 1, 0, 0, 1 ]), # A2223
-    Pattern(score: 9, delta: [ 0, 0, 1, 1 ]), # AAA23
-    Pattern(score: 8, delta: [ 1, 1, 1, 0 ]), # A2344
-    Pattern(score: 8, delta: [ 1, 1, 0, 1 ]), # A2334
-    Pattern(score: 8, delta: [ 1, 0, 1, 1 ]), # A2234
-    Pattern(score: 8, delta: [ 0, 1, 1, 1 ]), # AA234
-    Pattern(score: 6, delta: [ X, 1, 1, 0 ]), # xA233
-    Pattern(score: 6, delta: [ X, 1, 0, 1 ]), # xA223
-    Pattern(score: 6, delta: [ X, 0, 1, 1 ]), # xAA23
-    Pattern(score: 6, delta: [ 1, 1, 0, X ]), # A233x
-    Pattern(score: 6, delta: [ 1, 0, 1, X ]), # A223x
-    Pattern(score: 6, delta: [ 0, 1, 1, X ]), # AA23x
-    Pattern(score: 5, delta: [ 1, 1, 1, 1 ]), # A2345
-    Pattern(score: 4, delta: [ X, 1, 1, 1 ]), # xA234
-    Pattern(score: 4, delta: [ 1, 1, 1, X ]), # A234x
-    Pattern(score: 3, delta: [ X, X, 1, 1 ]), # xxA23
-    Pattern(score: 3, delta: [ X, 1, 1, X ]), # xA23x
-    Pattern(score: 3, delta: [ 1, 1, X, X ]), # A23xx
+    Pattern(score: 12, delta: [ 0, 1, 1, 0 ]), # AA233
+    Pattern(score:  9, delta: [ 1, 1, 0, 0 ]), # A2333
+    Pattern(score:  9, delta: [ 1, 0, 0, 1 ]), # A2223
+    Pattern(score:  9, delta: [ 0, 0, 1, 1 ]), # AAA23
+    Pattern(score:  8, delta: [ 1, 1, 1, 0 ]), # A2344
+    Pattern(score:  8, delta: [ 1, 1, 0, 1 ]), # A2334
+    Pattern(score:  8, delta: [ 1, 0, 1, 1 ]), # A2234
+    Pattern(score:  8, delta: [ 0, 1, 1, 1 ]), # AA234
+    Pattern(score:  6, delta: [ X, 1, 1, 0 ]), # xA233
+    Pattern(score:  6, delta: [ X, 1, 0, 1 ]), # xA223
+    Pattern(score:  6, delta: [ X, 0, 1, 1 ]), # xAA23
+    Pattern(score:  6, delta: [ 1, 1, 0, X ]), # A233x
+    Pattern(score:  6, delta: [ 1, 0, 1, X ]), # A223x
+    Pattern(score:  6, delta: [ 0, 1, 1, X ]), # AA23x
+    Pattern(score:  5, delta: [ 1, 1, 1, 1 ]), # A2345
+    Pattern(score:  4, delta: [ X, 1, 1, 1 ]), # xA234
+    Pattern(score:  4, delta: [ 1, 1, 1, X ]), # A234x
+    Pattern(score:  3, delta: [ X, X, 1, 1 ]), # xxA23
+    Pattern(score:  3, delta: [ X, 1, 1, X ]), # xA23x
+    Pattern(score:  3, delta: [ 1, 1, X, X ]), # A23xx
   ]
 
   # Compare the sorted hand to the patterns.  Look at the difference between
@@ -283,6 +286,7 @@ assert 3 == score_runs(make_hand("JH QH AH 2H 3H"))
 assert 3 == score_runs(make_hand("JH AH 2H 3H TH"))
 assert 3 == score_runs(make_hand("AH 2H 3H JH TH"))
 assert 0 == score_runs(make_hand("AH 8H 3H JH TH"))
+assert 12 == score_runs(make_hand("6C 6D 4D 4S 5D"))
 
 proc score_flush(hand: Hand, is_crib: bool): int =
   assert hand.num_cards == 5
@@ -338,6 +342,7 @@ assert 15 == score_hand("AH 2H 3H 3S 3D", false) # triple run/3
 assert 15 == score_hand("3H AH 3S 2H 3D", false) # triple run/3
 assert 29 == score_hand("5H 5C 5S JD 5D", false)
 assert 28 == score_hand("5H 5C 5S 5D JD", false)
+assert 24 == score_hand("6C 4D 6D 4S 5D", false)
 
 # ---------------------------------------------------------------------------
 
@@ -374,8 +379,8 @@ proc make_deck(exclude: Hand): Hand =
         deck.push_back(card)
   return deck
 
-const max_score = 29 * 2
-const min_score = -max_score
+const max_score = 29 + 24  # 29 in hand, 24 in crib (44665)
+const min_score = -29      # 0 in hand, 29 in opp crib
 const num_scores = max_score - min_score + 1
 
 type

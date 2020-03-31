@@ -330,25 +330,26 @@ int score_runs(Hand const &hand) {
     int score;
     int delta[4];
   } const patterns[] = {
-    { 9, { 1, 1, 0, 0 } }, // A2333
-    { 9, { 1, 0, 0, 1 } }, // A2223
-    { 9, { 0, 0, 1, 1 } }, // AAA23
-    { 8, { 1, 1, 1, 0 } }, // A2344
-    { 8, { 1, 1, 0, 1 } }, // A2334
-    { 8, { 1, 0, 1, 1 } }, // A2234
-    { 8, { 0, 1, 1, 1 } }, // AA234
-    { 6, { X, 1, 1, 0 } }, // xA233
-    { 6, { X, 1, 0, 1 } }, // xA223
-    { 6, { X, 0, 1, 1 } }, // xAA23
-    { 6, { 1, 1, 0, X } }, // A233x
-    { 6, { 1, 0, 1, X } }, // A223x
-    { 6, { 0, 1, 1, X } }, // AA23x
-    { 5, { 1, 1, 1, 1 } }, // A2345
-    { 4, { X, 1, 1, 1 } }, // xA234
-    { 4, { 1, 1, 1, X } }, // A234x
-    { 3, { X, X, 1, 1 } }, // xxA23
-    { 3, { X, 1, 1, X } }, // xA23x
-    { 3, { 1, 1, X, X } }, // A23xx
+    { 12, { 0, 1, 1, 0 } }, // AA233
+    {  9, { 1, 1, 0, 0 } }, // A2333
+    {  9, { 1, 0, 0, 1 } }, // A2223
+    {  9, { 0, 0, 1, 1 } }, // AAA23
+    {  8, { 1, 1, 1, 0 } }, // A2344
+    {  8, { 1, 1, 0, 1 } }, // A2334
+    {  8, { 1, 0, 1, 1 } }, // A2234
+    {  8, { 0, 1, 1, 1 } }, // AA234
+    {  6, { X, 1, 1, 0 } }, // xA233
+    {  6, { X, 1, 0, 1 } }, // xA223
+    {  6, { X, 0, 1, 1 } }, // xAA23
+    {  6, { 1, 1, 0, X } }, // A233x
+    {  6, { 1, 0, 1, X } }, // A223x
+    {  6, { 0, 1, 1, X } }, // AA23x
+    {  5, { 1, 1, 1, 1 } }, // A2345
+    {  4, { X, 1, 1, 1 } }, // xA234
+    {  4, { 1, 1, 1, X } }, // A234x
+    {  3, { X, X, 1, 1 } }, // xxA23
+    {  3, { X, 1, 1, X } }, // xA23x
+    {  3, { 1, 1, X, X } }, // A23xx
   };
   constexpr auto num_patterns = sizeof(patterns) / sizeof(patterns[0]);
   int score = 0;
@@ -457,8 +458,8 @@ Hand make_deck(Hand const &exclude) {
 }
 
 struct Tally {
-  static constexpr int max_score = 29 * 2;
-  static constexpr int min_score = -max_score;
+  static constexpr int max_score = 29 + 24; // 29 in hand, 24 in crib (44665)
+  static constexpr int min_score = -29;     // 0 in hand, 29 in opp crib
   static constexpr size_t size = max_score - min_score + 1;
   int scores[size];
   void increment(int score)
@@ -665,9 +666,26 @@ try {
   EXPECT_EQUAL(score_hand("3H AH 3S 2H 3D", false), 15); // triple run/3
   EXPECT_EQUAL(score_hand("5H 5C 5S JD 5D", false), 29);
   EXPECT_EQUAL(score_hand("5H 5C 5S 5D JD", false), 28);
+  EXPECT_EQUAL(score_hand("6C 4D 6D 4S 5D", false), 24);
 
   while (*argv)
     analyze_hand(*argv++);
+
+  // with 29 in your hand, what's the most you could have in the crib?
+  if (false) {
+      const auto hand{ make_hand("5H 5C 5S JD 5D") }; // 29 hand
+      const auto cut{ hand.cards[4] };
+      const auto deck{ make_deck(hand) };
+      int best = 0;
+      for_each_choice(deck, 4, [&](Hand crib) {
+          crib.push_back(cut);
+          auto score = score_hand(crib, true);
+          if (best <= score) {
+              best = score;
+              cout << score << ' ' << crib << '\n';
+          }
+      });
+  }
 
 } catch (std::exception const &exc) {
   std::clog << "Caught exception: " << exc.what() << std::endl;
