@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <utility>
 #include <cstring>
+#include <tuple>
 
 namespace {
 
@@ -19,7 +20,6 @@ using Rank = int; // 'A', '2', '3', ..., 'J', 'Q', 'K'
 using Suit = int; // 'S', 'D', 'C', 'H'
 
 bool show_tallies = false;
-bool verbose_score = false;
 bool verbose = false;
 
 struct Card {
@@ -139,6 +139,15 @@ std::ostream &operator<<(std::ostream &os, Hand const &hand) {
       os << ' ' << hand.cards[i];
   }
   return os;
+}
+
+bool operator<(Card const& a, Card const& b) {
+    return std::make_tuple(a.rank, a.suit) < std::make_tuple(b.rank, b.suit);
+}
+
+void sort(Hand& hand)
+{
+    std::sort(hand.cards, hand.cards + hand.num_cards);
 }
 
 Hand make_hand(char const *hand) {
@@ -261,16 +270,6 @@ int score_fifteens(Hand const &hand) {
   if (d + e == 15)
     ++num_15s;
 
-  if (verbose_score)
-    cout << __func__ << ": "
-         << a << '+'
-         << b << '+'
-         << c << '+'
-         << d << '+'
-         << e << '='
-         << num_15s
-         << endl;
-
   return 2 * num_15s;
 }
 
@@ -284,9 +283,6 @@ int score_pairs(Hand const &hand) {
         ++num_pairs;
     }
   }
-
-  if (verbose_score)
-    cout << __func__ << ": " << num_pairs << endl;
 
   return 2 * num_pairs;
 }
@@ -316,14 +312,6 @@ int score_runs(Hand const &hand) {
       }
     }
   }
-  if (verbose_score)
-    cout << __func__ << ": orders"
-         << ' ' << orders[0]
-         << ' ' << orders[1]
-         << ' ' << orders[2]
-         << ' ' << orders[3]
-         << ' ' << orders[4]
-         << endl;
 
   constexpr int X = -1; // match any rank
   struct {
@@ -352,17 +340,12 @@ int score_runs(Hand const &hand) {
     {  3, { 1, 1, X, X } }, // A23xx
   };
   constexpr auto num_patterns = sizeof(patterns) / sizeof(patterns[0]);
-  int score = 0;
   for (size_t i = 0; i < num_patterns; ++i) {
     auto &pattern = patterns[i];
     auto previous = orders[0];
     for (size_t j = 0;; ++j) {
-      if (j == 4) {
-        if (verbose_score)
-          cout << __func__ << " += [" << i << "] " << pattern.score << endl;
-        score = pattern.score;
-        goto break2;
-      }
+      if (j == 4)
+        return pattern.score;
       auto delta = pattern.delta[j];
       auto order = orders[j + 1];
       if (delta != X && delta != order - previous)
@@ -370,12 +353,8 @@ int score_runs(Hand const &hand) {
       previous = order;
     }
   }
-break2:
 
-  if (verbose_score)
-    cout << __func__ << ": " << score << endl;
-
-  return score;
+  return 0;
 }
 
 int score_flush(Hand const &hand, bool is_crib) {
@@ -644,8 +623,6 @@ try {
   while (auto arg = *++argv) {
     if (strcmp(arg, "--show-tallies") == 0)
       show_tallies = true;
-    else if (strcmp(arg, "--verbose-score") == 0)
-      verbose_score = true;
     else if (strcmp(arg, "--verbose") == 0)
       verbose = true;
     else
@@ -672,7 +649,7 @@ try {
     analyze_hand(*argv++);
 
   // with 29 in your hand, what's the most you could have in the crib?
-  if (false) {
+  if ((false)) {
       const auto hand{ make_hand("5H 5C 5S JD 5D") }; // 29 hand
       const auto cut{ hand.cards[4] };
       const auto deck{ make_deck(hand) };
@@ -681,6 +658,7 @@ try {
           crib.push_back(cut);
           auto score = score_hand(crib, true);
           if (best <= score) {
+              sort(crib);
               best = score;
               cout << score << ' ' << crib << '\n';
           }
