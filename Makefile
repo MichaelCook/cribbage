@@ -1,7 +1,10 @@
+HAND = 5H-5C-5S-JD-4C-4D
+
 CXX = clang++
 
 CXXFLAGS = \
   -O3 \
+  -DNDEBUG \
   -Werror \
   -Wpedantic \
   -Weverything \
@@ -9,11 +12,32 @@ CXXFLAGS = \
   -std=c++2a \
   -fsanitize=address \
 
-.PHONY: all
-all: build
-	./a.out 7c9h5h5c5djs
-	./a.out "2H 2C 2D 9S QH QC" "3H 3C 8D 7S 5H 2C"
+NIMFLAGS = \
+  --verbosity:0 \
+  --hints:off \
+  --opt:speed \
 
-.PHONY: build
-build:
-	$(CXX) $(CXXFLAGS) cribbage.cpp
+.PHONY: all
+all: test-cpp test-nim test-python
+
+cribbage-cpp: cribbage.cpp
+	$(CXX) $(CXXFLAGS) -o $@ cribbage.cpp
+
+cribbage-nim: cribbage.nim
+	nim c --out:$@ $(NIMFLAGS) cribbage.nim
+
+.PHONY: test-cpp
+test-cpp: cribbage-cpp
+	time ./cribbage-cpp $(HAND)
+
+.PHONY: test-nim
+test-nim: cribbage-nim
+	time ./cribbage-nim $(HAND)
+
+.PHONY: test-python
+test-python:
+	time ./cribbage.py $(HAND)
+
+.PHONY: clean
+clean:
+	rm -fv cribbage-nim cribbage-cpp
