@@ -48,3 +48,9 @@ There's also a Nim language implementation.
 nim --opt:speed c cribbage.nim
 ./cribbage 7c9h5h5c5djs
 ```
+
+There's also a Python language implementation.
+
+```
+./cribbage.py 7c9h5h5c5djs
+```
