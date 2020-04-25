@@ -48,6 +48,8 @@ rank_to_order = {
 class Card:
 
     def __init__(self, rank, suit):
+        assert rank in rank_to_value
+        assert suit in suits
         self.rank = rank
         self.suit = suit
 
@@ -65,9 +67,6 @@ class Hand:
     def __init__(self):
         self.cards = []
 
-    def card(self, i):
-        return self.cards[i]
-
     def value(self, i):
         r = self.cards[i].rank
         return rank_to_value[r]
@@ -75,11 +74,11 @@ class Hand:
     def size(self):
         return len(self.cards)
 
-    def push_back(self, card):
+    def push(self, card):
         assert card not in self.cards
         self.cards.append(card)
 
-    def pop_back(self):
+    def pop(self):
         return self.cards.pop()
 
     def has(self, card):
@@ -101,7 +100,7 @@ def make_hand(s):
         if c in suits:
             if rank is None:
                 raise Exception(f'Malformed hand: {s}')
-            hand.push_back(Card(rank, c))
+            hand.push(Card(rank, c))
             rank = None
             continue
 
@@ -353,14 +352,14 @@ def choose(hand, num_choose):
     while True:
         if chosen.size() == num_choose:
             yield chosen
-            chosen.pop_back()
+            chosen.pop()
             i = i_stack.pop() + 1
         elif i != hand.size():
-            chosen.push_back(hand.cards[i])
+            chosen.push(hand.cards[i])
             i_stack.append(i)
             i += 1
         elif i_stack:
-            chosen.pop_back()
+            chosen.pop()
             i = i_stack.pop() + 1
         else:
             break
@@ -372,7 +371,7 @@ def make_deck(exclude):
         for rank in rank_to_value:
             card = Card(rank, suit)
             if not exclude.has(card):
-                deck.push_back(card)
+                deck.push(card)
     return deck
 
 max_score = 29 + 24  # 29 in hand, 24 in crib (44665)
@@ -383,6 +382,9 @@ class Tally:
 
     def __init__(self):
         self.scores = [0] * num_scores
+
+    def count(self, score):
+        self.scores[score - min_score] += 1
 
 class Statistics:
 
@@ -432,7 +434,7 @@ def analyze_hand(hand):
         for i in range(hand.size()):
             card = hand.cards[i]
             if not discarding.has(card):
-                keeping.push_back(card)
+                keeping.push(card)
 
         deck = make_deck(hand)
         mine_tally = Tally()   # scores when the crib is mine
@@ -443,12 +445,12 @@ def analyze_hand(hand):
             cut = chosen.cards[2]
 
             hold = keeping.copy()
-            hold.push_back(cut)
+            hold.push(cut)
 
             crib = discarding.copy()
-            crib.push_back(chosen.cards[0])
-            crib.push_back(chosen.cards[1])
-            crib.push_back(cut)
+            crib.push(chosen.cards[0])
+            crib.push(chosen.cards[1])
+            crib.push(cut)
 
             hold_score = score_hand(hold, False)
             crib_score = score_hand(crib, True)
@@ -456,8 +458,8 @@ def analyze_hand(hand):
             mine_score = hold_score + crib_score
             theirs_score = hold_score - crib_score
 
-            mine_tally.scores[mine_score - min_score] += 1
-            theirs_tally.scores[theirs_score - min_score] += 1
+            mine_tally.count(mine_score)
+            theirs_tally.count(theirs_score)
 
         assert num_hands == 15180 # sanity check, expecting C(46,3)
 
