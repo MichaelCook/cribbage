@@ -451,6 +451,13 @@ struct Tally {
   {
     std::fill(scores, scores + size, 0);
   }
+  Tally(std::initializer_list<int> s)
+  {
+    int i = 0;
+    for (auto v : s)
+        scores[i++] = v;
+    assert(i == size);
+  }
 };
 
 struct Statistics {
@@ -462,6 +469,7 @@ struct Statistics {
 };
 
 std::ostream &operator<<(std::ostream &os, Statistics const &st) {
+  os << std::fixed << std::setprecision(1);
   return os << st.mean << ' ' << st.stdev << ' ' << st.min << ".." << st.max;
 }
 
@@ -587,8 +595,7 @@ void analyze_hand(Hand const &hand) {
     Statistics if_mine(mine_tally, num_hands);
     Statistics if_theirs(theirs_tally, num_hands);
 
-    cout << std::fixed << std::setprecision(1)
-         << discard << " [" << if_mine << ']' << " [" << if_theirs << "]\n";
+    cout << discard << " [" << if_mine << ']' << " [" << if_theirs << "]\n";
 
     if (show_tallies)
       cout << '\n';
@@ -601,6 +608,14 @@ void analyze_hand(char const* hand) {
 }
 
 // ---------------------------------------------------------------------------
+
+template <typename T>
+std::string to_string(T const& t)
+{
+    std::ostringstream ss;
+    ss << t;
+    return ss.str();
+}
 
 template <typename T, typename U>
 void expect_equal(T a, U b, char const *as, char const *bs, char const *file,
@@ -644,6 +659,16 @@ try {
   EXPECT_EQUAL(score_hand("5H 5C 5S JD 5D", false), 29);
   EXPECT_EQUAL(score_hand("5H 5C 5S 5D JD", false), 28);
   EXPECT_EQUAL(score_hand("6C 4D 6D 4S 5D", false), 24);
+
+  {
+      Tally t{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 907, 411, 1419, 650, 1855, 663, 1908, 931,
+               1671, 650, 1699, 530, 607, 137, 291, 160, 228, 111, 66, 106,
+               5, 61, 7, 26, 0, 30, 0, 41, 0, 4, 3, 0, 0, 0, 2, 0, 0, 1 };
+      Statistics s{t, 15180};
+      EXPECT_EQUAL(to_string(s), "22.9 0.8 16..53");
+  }
 
   while (*argv)
     analyze_hand(*argv++);
