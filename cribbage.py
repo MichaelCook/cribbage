@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 # Copyright (c) 2020, Michael Cook <michael@waxrat.com>. All rights reserved.
 
 #
@@ -344,6 +344,7 @@ assert 24 == score_hand('6C 4D 6D 4S 5D', False)
 
 # Iterate over all of the ways of choosing `num_choose` cards
 # from the given hand `hand`.
+# TODO: should simply replace this with itertools.combinations
 def choose(hand, num_choose):
     chosen = Hand()
     i = 0
@@ -399,7 +400,7 @@ class Statistics:
 
 def make_statistics(tally, num_hands):
     # Convert `tally` to a Statistics object.  `tally` is the number of times
-    # each score 0..29 was achieved over `num_hands` hands.
+    # each score min_score..max_score was achieved over `num_hands` hands.
     min = 0
     for score in range(min_score, max_score + 1):
         if tally.scores[score - min_score] != 0:
