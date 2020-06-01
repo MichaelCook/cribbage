@@ -212,7 +212,7 @@ proc score_runs(hand: Hand): int =
 
   # Make a sorted sequence of the orders of the cards in the hand.
   # The order of Ace is 1, Two is 2, ..., Ten is 10, Jack is 11,
-  # Queen is 12, # King is 13.
+  # Queen is 12, King is 13.
   var orders = map(hand.cards, proc (card: Card): int =
                                  ord(card.rank))
   sort orders
@@ -396,7 +396,7 @@ proc `$`(st: Statistics): string =
 
 proc make_statistics(tally: Tally, num_hands: int): Statistics =
   # Convert `tally` to a Statistics object.  `tally` is the number of times
-  # each score 0..29 was achieved over `num_hands` hands.
+  # each score min_score..max_score was achieved over `num_hands` hands.
   var min = 0
   for score in min_score..max_score:
     if tally.scores[score - min_score] != 0:
