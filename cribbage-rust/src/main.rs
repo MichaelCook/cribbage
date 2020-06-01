@@ -167,6 +167,7 @@ impl Hand {
     }
 
     pub fn push_back(&mut self, card: Card) {
+        assert!(!self.has(&card));
         self.cards.push(card);
     }
 }
