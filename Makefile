@@ -17,14 +17,21 @@ NIMFLAGS = \
   --hints:off \
   --opt:speed \
 
+CARGOFLAGS = \
+  --release \
+
 .PHONY: all
-all: test-cpp test-nim test-python
+all: test-cpp test-nim test-python test-rust
 
 cribbage-cpp: cribbage.cpp
 	$(CXX) $(CXXFLAGS) -o $@ cribbage.cpp
 
 cribbage-nim: cribbage.nim
 	nim c --out:$@ $(NIMFLAGS) cribbage.nim
+
+.PHONY: cribbage-rust
+cribbage-rust:
+	cd cribbage-rust && cargo build $(CARGOFLAGS)
 
 .PHONY: test-cpp
 test-cpp: cribbage-cpp
@@ -38,6 +45,11 @@ test-nim: cribbage-nim
 test-python:
 	time ./cribbage.py $(HAND)
 
+.PHONY: test-rust
+test-rust: cribbage-rust
+	time cribbage-rust/target/release/cribbage $(HAND)
+
 .PHONY: clean
 clean:
-	rm -fv cribbage-nim cribbage-cpp
+	rm -fv cribbage-nim cribbage-cpp cribbage-rust/Cargo.lock
+	cd cribbage-rust && cargo clean

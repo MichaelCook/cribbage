@@ -42,7 +42,8 @@ deviation, minimum and maximum scores.  The first set of numbers is for when
 the crib is yours; the second set, the crib is your opponent's.  (A smaller
 standard deviation means you're more likely to get the average score.)
 
-There are also Nim and Python implementations.
+There are also Rust, Nim and Python implementations.
+See `make test`.
 
 ```
 $ make
@@ -66,6 +67,7 @@ JD 4D [16.7 0.5 8..38] [9.0 0.4 -7..23]
 
 0.15user 0.00system 0:00.15elapsed 100%CPU (0avgtext+0avgdata 6608maxresident)k
 0inputs+0outputs (0major+2938minor)pagefaults 0swaps
+
 time ./cribbage-nim 5H-5C-5S-JD-4C-4D
 [ 5H 5C 5S JD 4C 4D ]
 5H 5C [15.7 0.5 6..38] [-1.3 0.4 -16..13]
@@ -86,6 +88,7 @@ JD 4D [16.7 0.5 8..38] [9.0 0.4 -7..23]
 
 1.39user 0.00system 0:01.39elapsed 100%CPU (0avgtext+0avgdata 2388maxresident)k
 0inputs+0outputs (0major+124minor)pagefaults 0swaps
+
 time ./cribbage.py 5H-5C-5S-JD-4C-4D
 [ 5H 5C 5S JD 4C 4D ]
 5H 5C [15.7 0.5 6..38] [-1.3 0.4 -16..13]
@@ -106,5 +109,28 @@ JD 4D [16.7 0.5 8..38] [9.0 0.4 -7..23]
 
 4.37user 0.00system 0:04.37elapsed 99%CPU (0avgtext+0avgdata 9972maxresident)k
 0inputs+0outputs (0major+1204minor)pagefaults 0swaps
+
+cd cribbage-rust && cargo build --release
+    Finished release [optimized] target(s) in 0.00s
+time cribbage-rust/target/release/cribbage 5H-5C-5S-JD-4C-4D
+[ 5H 5C 5S JD 4C 4D ]
+5H 5C [15.7 0.5 6..38] [-1.3 0.4 -16..13]
+5H 5S [15.7 0.5 6..38] [-1.3 0.4 -16..13]
+5H JD [14.9 0.5 6..35] [1.2 0.4 -12..16]
+5H 4C [16.3 0.6 8..41] [3.1 0.4 -16..13]
+5H 4D [16.3 0.6 8..41] [3.1 0.4 -16..13]
+5C 5S [15.7 0.5 6..38] [-1.3 0.4 -16..13]
+5C JD [14.9 0.5 6..35] [1.2 0.4 -12..16]
+5C 4C [16.3 0.6 8..41] [3.1 0.4 -16..13]
+5C 4D [16.3 0.6 8..41] [3.1 0.4 -16..13]
+5S JD [14.9 0.5 6..35] [1.2 0.4 -12..16]
+5S 4C [16.3 0.6 8..41] [3.1 0.4 -16..13]
+5S 4D [16.3 0.6 8..41] [3.1 0.4 -16..13]
+JD 4C [16.7 0.5 8..38] [9.1 0.4 -5..23]
+JD 4D [16.7 0.5 8..38] [9.0 0.4 -7..23]
+4C 4D [22.9 0.8 16..53] [11.4 0.6 -10..27]
+
+0.05user 0.00system 0:00.05elapsed 100%CPU (0avgtext+0avgdata 2040maxresident)k
+0inputs+0outputs (0major+94minor)pagefaults 0swaps
 $
 ```
