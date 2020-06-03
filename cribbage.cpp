@@ -99,14 +99,14 @@ struct Hand {
     }
   }
 
-  void push_back(Card const &card) {
+  void push(Card const &card) {
     if (num_cards == max_cards)
       throw std::runtime_error("Too many cards in hand");
     cards[num_cards] = card;
     ++num_cards;
   }
 
-  void pop_back() {
+  void pop() {
     if (num_cards == 0)
       throw std::runtime_error("Empty hand");
     --num_cards;
@@ -166,7 +166,7 @@ Hand make_hand(char const *hand) {
       if (rank == 0)
         throw std::runtime_error("Malformed hand '" + std::string(hand) +
                                  "' at '" + std::string(s) + '\'');
-      h.push_back(Card(rank, c));
+      h.push(Card(rank, c));
       rank = 0;
       break;
     case 'A':
@@ -410,10 +410,10 @@ void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
     return;
   }
   while (offset != hand.size()) {
-    chosen.push_back(hand.cards[offset]);
+    chosen.push(hand.cards[offset]);
     ++offset;
     for_each_choice(hand, offset, num_choose, chosen, func);
-    chosen.pop_back();
+    chosen.pop();
   }
 }
 
@@ -430,7 +430,7 @@ Hand make_deck(Hand const &exclude) {
                        '8', '9', 'T', 'J', 'Q', 'K' }) {
       Card card(rank, suit);
       if (!exclude.has(card))
-        deck.push_back(card);
+        deck.push(card);
     }
   }
   return deck;
@@ -513,7 +513,7 @@ void analyze_hand(Hand const &hand) {
     for (size_t i = 0; i != hand.size(); ++i) {
       auto &card = hand.card(i);
       if (!discard.has(card))
-        keep.push_back(card);
+        keep.push(card);
     }
     if (verbose)
       cout << "from |" << hand << "| discard |"
@@ -533,12 +533,12 @@ void analyze_hand(Hand const &hand) {
       auto& cut = chosen.card(2);
 
       Hand hold(keep);
-      hold.push_back(cut);
+      hold.push(cut);
 
       Hand crib(discard);
-      crib.push_back(chosen.card(0));
-      crib.push_back(chosen.card(1));
-      crib.push_back(cut);
+      crib.push(chosen.card(0));
+      crib.push(chosen.card(1));
+      crib.push(cut);
 
       auto hold_score = score_hand(hold, false);
       auto crib_score = score_hand(crib, true);
@@ -680,7 +680,7 @@ try {
       const auto deck{ make_deck(hand) };
       int best = 0;
       for_each_choice(deck, 4, [&](Hand crib) {
-          crib.push_back(cut);
+          crib.push(cut);
           auto score = score_hand(crib, true);
           if (best <= score) {
               sort(crib);

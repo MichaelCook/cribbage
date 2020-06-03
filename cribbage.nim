@@ -66,7 +66,7 @@ proc value(hand: Hand, i: int): int =
 proc has(hand: Hand, c: Card): bool =
   return contains(hand.cards, c)
 
-proc push_back(hand: var Hand, c: Card) =
+proc push(hand: var Hand, c: Card) =
   if hand.has(c):
     raise newException(ValueError, "Duplicate card " & $c & " in hand " & $hand)
   if hand.num_cards == len(hand.slots):
@@ -74,7 +74,7 @@ proc push_back(hand: var Hand, c: Card) =
   hand.slots[hand.num_cards] = c
   inc hand.num_cards
 
-proc pop_back(hand: var Hand) =
+proc pop(hand: var Hand) =
   assert hand.num_cards > 0
   dec hand.num_cards
 
@@ -89,7 +89,7 @@ proc make_hand(s: string): Hand =
     if i != -1:
       if rank == -1:
         raise newException(ValueError, "Malformed hand: " & s)
-      hand.push_back(Card(rank: Rank(rank), suit: Suit(i)))
+      hand.push(Card(rank: Rank(rank), suit: Suit(i)))
       rank = -1
       continue
 
@@ -357,14 +357,14 @@ iterator choose(hand: Hand, num_choose: int): Hand =
   while true:
     if chosen.num_cards == num_choose:
       yield chosen
-      chosen.pop_back()
+      chosen.pop()
       i = i_stack.pop() + 1
     elif i != hand.num_cards:
-      chosen.push_back(hand.cards[i])
+      chosen.push(hand.cards[i])
       i_stack.add(i)
       inc i
     elif i_stack.len > 0:
-      chosen.pop_back()
+      chosen.pop()
       i = i_stack.pop() + 1
     else:
       break
@@ -376,7 +376,7 @@ proc make_deck(exclude: Hand): Hand =
     for rank in Rank:
       let card = Card(rank: rank, suit: suit)
       if not exclude.has(card):
-        deck.push_back(card)
+        deck.push(card)
   return deck
 
 const max_score = 29 + 24  # 29 in hand, 24 in crib (44665)
@@ -431,7 +431,7 @@ proc analyze_hand(hand: Hand) =
     for i in 0 ..< hand.num_cards:
       let card = hand.cards[i]
       if not discarding.has(card):
-        keeping.push_back(card)
+        keeping.push(card)
 
     let deck = make_deck(hand)
     var mine_tally: Tally       # scores when the crib is mine
@@ -442,12 +442,12 @@ proc analyze_hand(hand: Hand) =
       let cut = chosen.cards[2]
 
       var hold = keeping
-      hold.push_back(cut)
+      hold.push(cut)
 
       var crib = discarding
-      crib.push_back(chosen.cards[0])
-      crib.push_back(chosen.cards[1])
-      crib.push_back(cut)
+      crib.push(chosen.cards[0])
+      crib.push(chosen.cards[1])
+      crib.push(cut)
 
       let hold_score = score_hand(hold, false)
       let crib_score = score_hand(crib, true)

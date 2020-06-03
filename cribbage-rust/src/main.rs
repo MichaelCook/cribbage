@@ -166,7 +166,7 @@ impl Hand {
         false
     }
 
-    pub fn push_back(&mut self, card: Card) {
+    pub fn push(&mut self, card: Card) {
         assert!(!self.has(&card));
         self.cards.push(card);
     }
@@ -403,7 +403,7 @@ fn make_deck(exclude: &Hand) -> Hand {
         for rank in &RANKS {
             let card = Card{rank: *rank, suit: *suit};
             if !exclude.has(&card) {
-                deck.push_back(card);
+                deck.push(card);
             }
         }
     }
@@ -492,7 +492,7 @@ fn analyze_hand(hand: &Hand) {
         let mut keeping = Hand::new();
         for card in hand.cards.iter() {
             if !discarding.has(&card) {
-                keeping.push_back(*card);
+                keeping.push(*card);
             }
         }
 
@@ -505,12 +505,12 @@ fn analyze_hand(hand: &Hand) {
             let cut = from_deck[2];
 
             let mut hold = keeping.clone();
-            hold.push_back(*cut);
+            hold.push(*cut);
 
             let mut crib = discarding.clone();
-            crib.push_back(*from_deck[0]);
-            crib.push_back(*from_deck[1]);
-            crib.push_back(*cut);
+            crib.push(*from_deck[0]);
+            crib.push(*from_deck[1]);
+            crib.push(*cut);
 
             let hold_score = score_hand(&hold, false);
             let crib_score = score_hand(&crib, true);
@@ -528,6 +528,7 @@ fn analyze_hand(hand: &Hand) {
 
         println!("{} [{}] [{}]", discarding, if_mine, if_theirs);
     }
+    println!()
 }
 
 fn main() {
