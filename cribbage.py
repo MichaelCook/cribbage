@@ -438,6 +438,7 @@ def analyze_hand(hand):
                 keeping.push(card)
 
         deck = make_deck(hand)
+        assert len(deck.cards) == 46
         mine_tally = Tally()   # scores when the crib is mine
         theirs_tally = Tally() # scores then the crib is theirs
         num_hands = 0

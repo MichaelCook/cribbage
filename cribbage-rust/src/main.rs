@@ -484,8 +484,6 @@ fn analyze_hand(hand: &Hand) {
       Find all possible pairs of cards to discard to the crib.
       There are C(6,2)=15 possible discards in a cribbage hand.
      */
-    println!("[ {} ]", hand);
-
     for from_hand in hand.cards.iter().combinations(2) {
         let discarding = Hand::from_vec(from_hand);
 
@@ -528,7 +526,6 @@ fn analyze_hand(hand: &Hand) {
 
         println!("{} [{}] [{}]", discarding, if_mine, if_theirs);
     }
-    println!()
 }
 
 fn main() {
@@ -607,6 +604,12 @@ fn main() {
 
     let args: Vec<String> = std::env::args().collect();
     for arg in args[1..].iter() {
-        analyze_hand(&Hand::make(&arg));
+        let hand = Hand::make(&arg);
+        if hand.num_cards() != 6 {
+            panic!("Wrong number of cards in hand: {hand}");
+        }
+        println!("[ {} ]", hand);
+        analyze_hand(&hand);
+        println!()
     }
 }
