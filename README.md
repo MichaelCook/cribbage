@@ -49,6 +49,16 @@ deviation, minimum and maximum scores.  The first set of numbers is for when
 the crib is yours; the second set, the crib is your opponent's.  (A smaller
 standard deviation means you're more likely to get the average score.)
 
+### Performance
+
+| Real | Sys | User | Language |
+| --- | --- | --- | --- |
+| 0.05 | 0.05 | 0.00 | rust |
+| 0.15 | 0.15 | 0.00 | cpp |
+| 0.57 | 0.60 | 0.02 | typescript |
+| 1.41 | 1.41 | 0.00 | nim |
+| 4.50 | 4.49 | 0.00 | python |
+
 ### Run All
 
 ```

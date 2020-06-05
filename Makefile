@@ -23,6 +23,10 @@ CARGOFLAGS = \
 TSCFLAGS = \
   --target ESNEXT \
 
+TIMINGLOG = timing.log~
+TIME = time --output=$(TIMINGLOG) --append \
+--format='| %e | %U | %S | $(patsubst test-%,%,$@) |'
+
 .PHONY: all
 all: test-cpp test-nim test-python test-rust test-typescript
 
@@ -43,26 +47,32 @@ node_modules:
 	npm i @types/node
 
 .PHONY: test-cpp
-test-cpp: cribbage-cpp
-	time ./cribbage-cpp $(HAND)
+test-cpp: cribbage-cpp timing
+	$(TIME) ./cribbage-cpp $(HAND)
 
 .PHONY: test-nim
-test-nim: cribbage-nim
-	time ./cribbage-nim $(HAND)
+test-nim: cribbage-nim timing
+	$(TIME) ./cribbage-nim $(HAND)
 
-.PHONY: test-python
+.PHONY: test-python timing
 test-python:
-	time ./cribbage.py $(HAND)
+	$(TIME) ./cribbage.py $(HAND)
 
-.PHONY: test-rust
+.PHONY: test-rust timing
 test-rust: cribbage-rust
-	time cribbage-rust/target/release/cribbage $(HAND)
+	$(TIME) cribbage-rust/target/release/cribbage $(HAND)
 
-.PHONY: test-typescript
+.PHONY: test-typescript timing
 test-typescript: cribbage.js
-	time node cribbage.js $(HAND)
+	$(TIME) node cribbage.js $(HAND)
 
 .PHONY: clean
 clean:
-	rm -rf cribbage-nim cribbage-cpp cribbage.js node_modules cribbage-rust/Cargo.lock
+	rm -rf cribbage-nim cribbage-cpp cribbage.js node_modules cribbage-rust/Cargo.lock $(TIMINGLOG)
 	cd cribbage-rust && cargo clean
+
+.PHONY: timing
+timing:
+	rm -f $(TIMINGLOG)
+	echo '| Real | Sys | User | Language |' >$(TIMINGLOG)
+	echo '| --- | --- | --- | --- |' >>$(TIMINGLOG)
