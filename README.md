@@ -12,7 +12,7 @@ This repo contains implementations in multiple computer languages:
 
 ### Example Output
 
-Here a sample run:
+Here's a sample run:
 
 ```
 $ ./cribbage-cpp "7C 9H 5H 5C 5D JS"
