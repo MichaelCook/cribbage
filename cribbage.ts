@@ -143,7 +143,7 @@ class Hand {
                 rank = r;
                 continue;
             }
-            if (c != ' ' && c != '-' ) {
+            if (c !== ' ' && c !== '-' ) {
                 throw new Error('Malformed hand: ' + text);
             }
         }
@@ -177,7 +177,7 @@ class Hand {
 
     public has(wanted: Card): boolean {
         for (let card of this.cards) {
-            if (wanted.rank == card.rank && wanted.suit == card.suit) {
+            if (wanted.rank === card.rank && wanted.suit === card.suit) {
                 return true;
             }
         }
@@ -221,88 +221,88 @@ function score_fifteens(hand: Hand): number {
     let num_15s = 0;
 
     // five cards - C(5,5)=1
-    if (a + b + c + d + e == 15) {
+    if (a + b + c + d + e === 15) {
         num_15s += 1;
     }
 
     // four cards - C(5,4)=5
-    if (a + b + c + d == 15) {
+    if (a + b + c + d === 15) {
         num_15s += 1;
     }
-    if (a + b + c + e == 15) {
+    if (a + b + c + e === 15) {
         num_15s += 1;
     }
-    if (a + b + d + e == 15) {
+    if (a + b + d + e === 15) {
         num_15s += 1;
     }
-    if (a + c + d + e == 15) {
+    if (a + c + d + e === 15) {
         num_15s += 1;
     }
-    if (b + c + d + e == 15) {
+    if (b + c + d + e === 15) {
         num_15s += 1;
     }
 
     // three cards - C(5,3)=10
-    if (a + b + c == 15) {
+    if (a + b + c === 15) {
         num_15s += 1;
     }
-    if (a + b + d == 15) {
+    if (a + b + d === 15) {
         num_15s += 1;
     }
-    if (a + b + e == 15) {
+    if (a + b + e === 15) {
         num_15s += 1;
     }
-    if (a + c + d == 15) {
+    if (a + c + d === 15) {
         num_15s += 1;
     }
-    if (a + c + e == 15) {
+    if (a + c + e === 15) {
         num_15s += 1;
     }
-    if (a + d + e == 15) {
+    if (a + d + e === 15) {
         num_15s += 1;
     }
-    if (b + c + d == 15) {
+    if (b + c + d === 15) {
         num_15s += 1;
     }
-    if (b + c + e == 15) {
+    if (b + c + e === 15) {
         num_15s += 1;
     }
-    if (b + d + e == 15) {
+    if (b + d + e === 15) {
         num_15s += 1;
     }
-    if (c + d + e == 15) {
+    if (c + d + e === 15) {
         num_15s += 1;
     }
 
     // two cards - C(5,2)=10
-    if (a + b == 15) {
+    if (a + b === 15) {
         num_15s += 1;
     }
-    if (a + c == 15) {
+    if (a + c === 15) {
         num_15s += 1;
     }
-    if (a + d == 15) {
+    if (a + d === 15) {
         num_15s += 1;
     }
-    if (a + e == 15) {
+    if (a + e === 15) {
         num_15s += 1;
     }
-    if (b + c == 15) {
+    if (b + c === 15) {
         num_15s += 1;
     }
-    if (b + d == 15) {
+    if (b + d === 15) {
         num_15s += 1;
     }
-    if (b + e == 15) {
+    if (b + e === 15) {
         num_15s += 1;
     }
-    if (c + d == 15) {
+    if (c + d === 15) {
         num_15s += 1;
     }
-    if (c + e == 15) {
+    if (c + e === 15) {
         num_15s += 1;
     }
-    if (d + e == 15) {
+    if (d + e === 15) {
         num_15s += 1;
     }
 
@@ -318,7 +318,7 @@ function score_pairs(hand: Hand): number {
     let num_pairs = 0;
     for (var ai = 0; ai < hand.cards.length - 1; ++ai) {
         for (var bi = ai + 1; bi < hand.cards.length; ++bi) {
-            if (hand.cards[ai].rank == hand.cards[bi].rank) {
+            if (hand.cards[ai].rank === hand.cards[bi].rank) {
                 num_pairs += 1;
             }
         }
@@ -374,12 +374,12 @@ function score_runs(hand: Hand): number {
         while (true) {
             let delta = pattern.delta[j];
             let order = orders[j + 1];
-            if (delta != X && delta != order - previous) {
+            if (delta !== X && delta !== order - previous) {
                 break
             }
             previous = order;
             j += 1;
-            if (j == 4) {
+            if (j === 4) {
                 return pattern.score;
             }
         }
@@ -414,12 +414,12 @@ function score_flush(hand: Hand, is_crib: boolean): number {
     equal(hand.cards.length, 5);
     let suit = hand.cards[0].suit;
     for (var i = 1; i < 4; ++i) {
-        if (suit != hand.cards[i].suit) {
+        if (suit !== hand.cards[i].suit) {
             return 0;
         }
     }
     // First 4 are the same suit, check the cut card
-    if (suit == hand.cards[4].suit) {
+    if (suit === hand.cards[4].suit) {
         return 5;
     }
     // In the crib, a flush counts only if all five cards are the same suit
@@ -439,8 +439,8 @@ function score_nobs(hand: Hand): number {
     equal(hand.cards.length, 5);
     let cut_suit = hand.cards[4].suit;
     for (var i = 0; i < 4; ++i) {
-        if (hand.cards[i].rank == Rank.Jack &&
-            hand.cards[i].suit == cut_suit) {
+        if (hand.cards[i].rank === Rank.Jack &&
+            hand.cards[i].suit === cut_suit) {
             return 1;
         }
     }
@@ -481,12 +481,12 @@ function* choose(hand: Hand, num_choose: number):
     let i_stack = new Array();
 
     while (true) {
-        if (chosen.cards.length == num_choose) {
+        if (chosen.cards.length === num_choose) {
             yield chosen;
             chosen.pop();
             i = i_stack.pop() + 1;
         }
-        else if (i != hand.cards.length) {
+        else if (i !== hand.cards.length) {
             chosen.push(hand.cards[i]);
             i_stack.push(i);
             i++;
@@ -542,7 +542,7 @@ class Statistics {
     static make(tally: Tally, num_hands: number): Statistics {
         let min = 0;
         for (let i = 0; i < NUM_SCORES; ++i) {
-            if (tally.scores[i] != 0) {
+            if (tally.scores[i] !== 0) {
                 min = i + MIN_SCORE;
                 break;
             }
@@ -550,7 +550,7 @@ class Statistics {
 
         let max = 0;
         for (let i = NUM_SCORES - 1; i >= 0; --i) {
-            if (tally.scores[i] != 0) {
+            if (tally.scores[i] !== 0) {
                 max = i + MIN_SCORE;
                 break;
             }
@@ -601,7 +601,7 @@ function analyze_hand(hand: Hand): void {
          !discard_curr.done;
          discard_curr = discard_iter.next()) {
         let discard = discard_curr.value;
-        if (typeof discard != 'object') {
+        if (typeof discard !== 'object') {
             continue;
         }
 
@@ -623,7 +623,7 @@ function analyze_hand(hand: Hand): void {
             !chosen_curr.done;
             chosen_curr = chosen_iter.next()) {
             let chosen = chosen_curr.value;
-            if (typeof chosen != 'object') {
+            if (typeof chosen !== 'object') {
                 continue;
             }
 
@@ -659,7 +659,7 @@ function analyze_hand(hand: Hand): void {
 const args = process.argv.slice(2);
 for (const i in args) {
     let hand = Hand.make(args[i]);
-    if (hand.cards.length != 6) {
+    if (hand.cards.length !== 6) {
         throw new Error(`Wrong number of cards in hand: ${hand}`);
     }
     console.log(`[ ${hand} ]`);
