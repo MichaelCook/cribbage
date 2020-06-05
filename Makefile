@@ -55,16 +55,16 @@ test-cpp: cribbage-cpp timing
 test-nim: cribbage-nim timing
 	$(TIMING) ./cribbage-nim $(HAND)
 
-.PHONY: test-python timing
-test-python:
+.PHONY: test-python
+test-python: timing
 	$(TIMING) ./cribbage.py $(HAND)
 
-.PHONY: test-rust timing
-test-rust: cribbage-rust
+.PHONY: test-rust
+test-rust: cribbage-rust timing
 	$(TIMING) cribbage-rust/target/release/cribbage $(HAND)
 
-.PHONY: test-typescript timing
-test-typescript: cribbage.js
+.PHONY: test-typescript
+test-typescript: cribbage.js timing
 	$(TIMING) node cribbage.js $(HAND)
 
 .PHONY: clean
