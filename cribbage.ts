@@ -125,7 +125,7 @@ class Hand {
     static make(text: string): Hand {
         let hand = new Hand();
         let rank: Rank = null;
-        for (let c of text) {
+        for (const c of text) {
             let suit = SuitFromChar(c);
             if (suit != null) {
                 if (rank == null) {
@@ -152,7 +152,7 @@ class Hand {
 
     public clone(): Hand {
         let hand = new Hand();
-        for (let card of this.cards) {
+        for (const card of this.cards) {
             hand.cards.push(card);
         }
         return hand;
@@ -161,7 +161,7 @@ class Hand {
     public toString = () : string => {
         let sep = false;
         let text = '';
-        for (let card of this.cards) {
+        for (const card of this.cards) {
             if (sep)
                 text += ' ';
             sep = true;
@@ -171,12 +171,12 @@ class Hand {
     }
 
     public value(i: number): number {
-        let card = this.cards[i];
+        const card = this.cards[i];
         return Math.min(10, card.rank);
     }
 
     public has(wanted: Card): boolean {
-        for (let card of this.cards) {
+        for (const card of this.cards) {
             if (wanted.rank === card.rank && wanted.suit === card.suit) {
                 return true;
             }
@@ -212,11 +212,11 @@ equal(false, Hand.make('6H').has(new Card(Rank.Five, Suit.Heart)));
 function score_fifteens(hand: Hand): number {
     equal(hand.cards.length, 5);
 
-    let a = hand.value(0);
-    let b = hand.value(1);
-    let c = hand.value(2);
-    let d = hand.value(3);
-    let e = hand.value(4);
+    const a = hand.value(0);
+    const b = hand.value(1);
+    const c = hand.value(2);
+    const d = hand.value(3);
+    const e = hand.value(4);
 
     let num_15s = 0;
 
@@ -316,8 +316,8 @@ equal(8, score_fifteens(Hand.make('6C 6D 4D 4S 5D')));
 
 function score_pairs(hand: Hand): number {
     let num_pairs = 0;
-    for (var ai = 0; ai < hand.cards.length - 1; ++ai) {
-        for (var bi = ai + 1; bi < hand.cards.length; ++bi) {
+    for (let ai = 0; ai < hand.cards.length - 1; ++ai) {
+        for (let bi = ai + 1; bi < hand.cards.length; ++bi) {
             if (hand.cards[ai].rank === hand.cards[bi].rank) {
                 num_pairs += 1;
             }
@@ -368,7 +368,7 @@ function score_runs(hand: Hand): number {
 
     // Compare the sorted hand to the PATTERNS.  Look at the difference between
     // the two cards in each pair of adjacent cards.  Stop at the first match.
-    for (let pattern of PATTERNS) {
+    for (const pattern of PATTERNS) {
         let previous = orders[0];
         let j = 0;
         while (true) {
@@ -412,8 +412,8 @@ equal(12, score_runs(Hand.make("6C 6D 4D 4S 5D")));
 
 function score_flush(hand: Hand, is_crib: boolean): number {
     equal(hand.cards.length, 5);
-    let suit = hand.cards[0].suit;
-    for (var i = 1; i < 4; ++i) {
+    const suit = hand.cards[0].suit;
+    for (let i = 1; i < 4; ++i) {
         if (suit !== hand.cards[i].suit) {
             return 0;
         }
@@ -437,8 +437,8 @@ equal(0, score_flush(Hand.make("5H 6H 7H 8D 9D"), false));
 function score_nobs(hand: Hand): number {
     // nobs: one point for the Jack of the same suit as the cut card
     equal(hand.cards.length, 5);
-    let cut_suit = hand.cards[4].suit;
-    for (var i = 0; i < 4; ++i) {
+    const cut_suit = hand.cards[4].suit;
+    for (let i = 0; i < 4; ++i) {
         if (hand.cards[i].rank === Rank.Jack &&
             hand.cards[i].suit === cut_suit) {
             return 1;
@@ -514,7 +514,7 @@ function make_deck(exclude: Hand): Hand {
             if (isNaN(rank)) {
                 continue;
             }
-            let card = new Card(rank, suit);
+            const card = new Card(rank, suit);
             if (!exclude.has(card)) {
                 deck.push(card);
             }
@@ -560,14 +560,14 @@ class Statistics {
         for (let score = min; score <= max; ++score) {
             sum += (score * tally.scores[score - MIN_SCORE]);
         }
-        let mean = sum / num_hands;
+        const mean = sum / num_hands;
 
         let sumdev = 0.0;
         for (let score = min; score <= max; ++score) {
-            let d = score - mean;
+            const d = score - mean;
             sumdev += d * d;
         }
-        let stdev = Math.sqrt(sumdev / num_hands);
+        const stdev = Math.sqrt(sumdev / num_hands);
 
         return new Statistics(mean, stdev, min, max);
     }
@@ -587,7 +587,7 @@ class Statistics {
     for (const i in scores) {
         t.scores[i] = scores[i];
     }
-    let s = Statistics.make(t, 15180);
+    const s = Statistics.make(t, 15180);
     equal(s.toString(), "22.9 0.8 16..53");
 }
 
@@ -596,61 +596,61 @@ function analyze_hand(hand: Hand): void {
       Find all possible pairs of cards to discard to the crib.
       There are C(6,2)=15 possible discards in a cribbage hand.
      */
-    let discard_iter = choose(hand, 2);
+    const discard_iter = choose(hand, 2);
     for (let discard_curr = discard_iter.next();
          !discard_curr.done;
          discard_curr = discard_iter.next()) {
-        let discard = discard_curr.value;
+        const discard = discard_curr.value;
         if (typeof discard !== 'object') {
             continue;
         }
 
         let keep = new Hand();
-        for (let card of hand.cards) {
+        for (const card of hand.cards) {
             if (!discard.has(card)) {
                 keep.push(card);
             }
         }
 
-        let deck = make_deck(hand);
+        const deck = make_deck(hand);
         equal(deck.cards.length, 46);
         let mine_tally = new Tally();    // scores when the crib is mine
         let theirs_tally = new Tally();  // scores then the crib is theirs
         let num_hands = 0;
 
-        let chosen_iter = choose(deck, 3);
+        const chosen_iter = choose(deck, 3);
         for (let chosen_curr = chosen_iter.next();
             !chosen_curr.done;
             chosen_curr = chosen_iter.next()) {
-            let chosen = chosen_curr.value;
+            const chosen = chosen_curr.value;
             if (typeof chosen !== 'object') {
                 continue;
             }
 
             num_hands++;
-            let cut = chosen.cards[2];
+            const cut = chosen.cards[2];
 
             let hold = keep.clone();
             hold.push(cut);
 
-            var crib = discard.clone();
+            let crib = discard.clone();
             crib.push(chosen.cards[0]);
             crib.push(chosen.cards[1]);
             crib.push(cut);
 
-            let hold_score = score_hand(hold, false);
-            let crib_score = score_hand(crib, true);
+            const hold_score = score_hand(hold, false);
+            const crib_score = score_hand(crib, true);
 
-            let mine_score = hold_score + crib_score;
-            let theirs_score = hold_score - crib_score;
+            const mine_score = hold_score + crib_score;
+            const theirs_score = hold_score - crib_score;
 
             mine_tally.increment(mine_score);
             theirs_tally.increment(theirs_score);
         }
         equal(num_hands, 15180);  // sanity check, expecting C(46,3)
 
-        let if_mine = Statistics.make(mine_tally, num_hands);
-        let if_theirs = Statistics.make(theirs_tally, num_hands);
+        const if_mine = Statistics.make(mine_tally, num_hands);
+        const if_theirs = Statistics.make(theirs_tally, num_hands);
 
         console.log(`${discard} [${if_mine}] [${if_theirs}]`);
     }
@@ -658,7 +658,7 @@ function analyze_hand(hand: Hand): void {
 
 const args = process.argv.slice(2);
 for (const i in args) {
-    let hand = Hand.make(args[i]);
+    const hand = Hand.make(args[i]);
     if (hand.cards.length !== 6) {
         throw new Error(`Wrong number of cards in hand: ${hand}`);
     }
