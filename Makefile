@@ -19,12 +19,13 @@ NIMFLAGS = \
 
 CARGOFLAGS = \
   --release \
+  --quiet \
 
 TSCFLAGS = \
   --target ESNEXT \
 
 TIMINGLOG = timing.log~
-TIME = time --output=$(TIMINGLOG) --append \
+TIMING = time --output=$(TIMINGLOG) --append \
 --format='| %e | %U | %S | $(patsubst test-%,%,$@) |'
 
 .PHONY: all
@@ -48,23 +49,23 @@ node_modules:
 
 .PHONY: test-cpp
 test-cpp: cribbage-cpp timing
-	$(TIME) ./cribbage-cpp $(HAND)
+	$(TIMING) ./cribbage-cpp $(HAND)
 
 .PHONY: test-nim
 test-nim: cribbage-nim timing
-	$(TIME) ./cribbage-nim $(HAND)
+	$(TIMING) ./cribbage-nim $(HAND)
 
 .PHONY: test-python timing
 test-python:
-	$(TIME) ./cribbage.py $(HAND)
+	$(TIMING) ./cribbage.py $(HAND)
 
 .PHONY: test-rust timing
 test-rust: cribbage-rust
-	$(TIME) cribbage-rust/target/release/cribbage $(HAND)
+	$(TIMING) cribbage-rust/target/release/cribbage $(HAND)
 
 .PHONY: test-typescript timing
 test-typescript: cribbage.js
-	$(TIME) node cribbage.js $(HAND)
+	$(TIMING) node cribbage.js $(HAND)
 
 .PHONY: clean
 clean:
@@ -73,6 +74,8 @@ clean:
 
 .PHONY: timing
 timing:
+ifdef TIMING
 	rm -f $(TIMINGLOG)
 	echo '| Real | Sys | User | Language |' >$(TIMINGLOG)
 	echo '| --- | --- | --- | --- |' >>$(TIMINGLOG)
+endif

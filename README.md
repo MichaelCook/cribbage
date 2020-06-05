@@ -62,8 +62,8 @@ standard deviation means you're more likely to get the average score.)
 ### Run All
 
 ```
-$ make
-time ./cribbage-cpp 5H-5C-5S-JD-4C-4D
+$ make TIMING=
+./cribbage-cpp 5H-5C-5S-JD-4C-4D
 [ 5H 5C 5S JD 4C 4D ]
 5H 5C [15.7 0.5 6..38] [-1.3 0.4 -16..13]
 5H 5S [15.7 0.5 6..38] [-1.3 0.4 -16..13]
@@ -81,10 +81,7 @@ JD 4C [16.7 0.5 8..38] [9.1 0.4 -5..23]
 JD 4D [16.7 0.5 8..38] [9.0 0.4 -7..23]
 4C 4D [22.9 0.8 16..53] [11.4 0.6 -10..27]
 
-0.14user 0.00system 0:00.15elapsed 100%CPU (0avgtext+0avgdata 6376maxresident)k
-0inputs+0outputs (0major+2938minor)pagefaults 0swaps
-
-time ./cribbage-nim 5H-5C-5S-JD-4C-4D
+./cribbage-nim 5H-5C-5S-JD-4C-4D
 [ 5H 5C 5S JD 4C 4D ]
 5H 5C [15.7 0.5 6..38] [-1.3 0.4 -16..13]
 5H 5S [15.7 0.5 6..38] [-1.3 0.4 -16..13]
@@ -102,10 +99,7 @@ JD 4C [16.7 0.5 8..38] [9.1 0.4 -5..23]
 JD 4D [16.7 0.5 8..38] [9.0 0.4 -7..23]
 4C 4D [22.9 0.8 16..53] [11.4 0.6 -10..27]
 
-1.40user 0.00system 0:01.40elapsed 100%CPU (0avgtext+0avgdata 2448maxresident)k
-0inputs+0outputs (0major+128minor)pagefaults 0swaps
-
-time ./cribbage.py 5H-5C-5S-JD-4C-4D
+./cribbage.py 5H-5C-5S-JD-4C-4D
 [ 5H 5C 5S JD 4C 4D ]
 5H 5C [15.7 0.5 6..38] [-1.3 0.4 -16..13]
 5H 5S [15.7 0.5 6..38] [-1.3 0.4 -16..13]
@@ -123,12 +117,8 @@ JD 4C [16.7 0.5 8..38] [9.1 0.4 -5..23]
 JD 4D [16.7 0.5 8..38] [9.0 0.4 -7..23]
 4C 4D [22.9 0.8 16..53] [11.4 0.6 -10..27]
 
-4.40user 0.00system 0:04.40elapsed 100%CPU (0avgtext+0avgdata 9812maxresident)k
-0inputs+0outputs (0major+1201minor)pagefaults 0swaps
-
-cd cribbage-rust && cargo build --release
-    Finished release [optimized] target(s) in 0.00s
-time cribbage-rust/target/release/cribbage 5H-5C-5S-JD-4C-4D
+cd cribbage-rust && cargo build --release --quiet
+cribbage-rust/target/release/cribbage 5H-5C-5S-JD-4C-4D
 [ 5H 5C 5S JD 4C 4D ]
 5H 5C [15.7 0.5 6..38] [-1.3 0.4 -16..13]
 5H 5S [15.7 0.5 6..38] [-1.3 0.4 -16..13]
@@ -146,10 +136,7 @@ JD 4C [16.7 0.5 8..38] [9.1 0.4 -5..23]
 JD 4D [16.7 0.5 8..38] [9.0 0.4 -7..23]
 4C 4D [22.9 0.8 16..53] [11.4 0.6 -10..27]
 
-0.05user 0.00system 0:00.05elapsed 100%CPU (0avgtext+0avgdata 2132maxresident)k
-0inputs+0outputs (0major+93minor)pagefaults 0swaps
-
-time node cribbage.js 5H-5C-5S-JD-4C-4D
+node cribbage.js 5H-5C-5S-JD-4C-4D
 [ 5H 5C 5S JD 4C 4D ]
 5H 5C [15.7 0.5 6..38] [-1.3 0.4 -16..13]
 5H 5S [15.7 0.5 6..38] [-1.3 0.4 -16..13]
@@ -167,7 +154,5 @@ JD 4C [16.7 0.5 8..38] [9.1 0.4 -5..23]
 JD 4D [16.7 0.5 8..38] [9.0 0.4 -7..23]
 4C 4D [22.9 0.8 16..53] [11.4 0.6 -10..27]
 
-0.58user 0.01system 0:00.55elapsed 109%CPU (0avgtext+0avgdata 47352maxresident)k
-0inputs+0outputs (0major+13716minor)pagefaults 0swaps
 $
 ```
