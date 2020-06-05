@@ -594,15 +594,7 @@ function analyze_hand(hand: Hand): void {
       Find all possible pairs of cards to discard to the crib.
       There are C(6,2)=15 possible discards in a cribbage hand.
      */
-    const discard_iter = choose(hand, 2);
-    for (let discard_curr = discard_iter.next();
-         !discard_curr.done;
-         discard_curr = discard_iter.next()) {
-        const discard = discard_curr.value;
-        if (typeof discard !== 'object') {
-            continue;
-        }
-
+    for (const discard of choose(hand, 2)) {
         let keep = new Hand();
         for (const card of hand.cards) {
             if (!discard.has(card)) {
@@ -616,15 +608,7 @@ function analyze_hand(hand: Hand): void {
         let theirs_tally = new Tally();  // scores then the crib is theirs
         let num_hands = 0;
 
-        const chosen_iter = choose(deck, 3);
-        for (let chosen_curr = chosen_iter.next();
-            !chosen_curr.done;
-            chosen_curr = chosen_iter.next()) {
-            const chosen = chosen_curr.value;
-            if (typeof chosen !== 'object') {
-                continue;
-            }
-
+        for (const chosen of choose(deck, 3)) {
             num_hands++;
             const cut = chosen.cards[2];
 
