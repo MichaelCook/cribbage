@@ -45,7 +45,7 @@ cribbage.js: cribbage.ts node_modules
 	tsc --outFile $@ $(TSCFLAGS) cribbage.ts
 
 node_modules:
-	npm i @types/node
+	npm install @types/node
 
 .PHONY: test-cpp
 test-cpp: cribbage-cpp timing
