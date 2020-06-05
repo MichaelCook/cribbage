@@ -152,9 +152,7 @@ class Hand {
 
     public clone(): Hand {
         let hand = new Hand();
-        for (const card of this.cards) {
-            hand.cards.push(card);
-        }
+        [...hand.cards] = this.cards;
         return hand;
     }
 
