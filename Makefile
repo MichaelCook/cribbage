@@ -1,16 +1,32 @@
-HAND = 5H-5C-5S-JD-4C-4D
+CC = clang
+
+CFLAGS = \
+  -O3 \
+  -Werror \
+  -Wpedantic \
+  -Weverything \
+  -Wno-format-nonliteral \
+  -Wno-disabled-macro-expansion \
+  -Wno-padded \
+  -std=c2x \
 
 CXX = clang++
 
 CXXFLAGS = \
   -O3 \
-  -DNDEBUG \
   -Werror \
   -Wpedantic \
   -Weverything \
   -Wno-c++98-compat \
   -std=c++2a \
-  -fsanitize=address \
+
+ifdef DEBUG
+  CFLAGS += -fsanitize=address
+  CXXFLAGS += -fsanitize=address
+else
+  CFLAGS += -DNDEBUG
+  CXXFLAGS += -DNDEBUG
+endif
 
 NIMFLAGS = \
   --verbosity:0 \
@@ -28,8 +44,31 @@ TIMINGLOG = timing.log~
 TIMING = time --output=$(TIMINGLOG) --append \
 --format='| %e | %U | %S | $(patsubst test-%,%,$@) |'
 
+ifdef TIMING
+  HAND = \
+    5H-5C-5S-JD-4C-4D \
+    AH-AS-JH-AC-AD-TH \
+    AH-AS-JD-AC-AD-9H \
+    AH-3H-7H-TH-JH-9H \
+    AH-3H-7H-TH-JH-9H \
+    AH-3H-7H-TH-JS-9H \
+    AH-3H-7S-TH-JH-9H \
+    AH-3H-7H-TH-JS-9H \
+    AH-2S-3C-5D-JH-9H \
+    7H-7S-7C-8D-8H-9H \
+
+else
+  HAND = 5H-5C-5S-JD-4C-4D
+endif
+
 .PHONY: all
-all: test-cpp test-nim test-python test-rust test-typescript
+all: test-c test-rust test-cpp test-typescript test-nim test-python
+ifdef TIMING
+	cat $(TIMINGLOG)
+endif
+
+cribbage-c: cribbage.c
+	$(CC) $(CFLAGS) -o $@ cribbage.c -lm
 
 cribbage-cpp: cribbage.cpp
 	$(CXX) $(CXXFLAGS) -o $@ cribbage.cpp
@@ -46,6 +85,10 @@ cribbage.js: cribbage.ts node_modules
 
 node_modules:
 	npm install @types/node
+
+.PHONY: test-c
+test-c: cribbage-c timing
+	$(TIMING) ./cribbage-c $(HAND)
 
 .PHONY: test-cpp
 test-cpp: cribbage-cpp timing
@@ -69,7 +112,7 @@ test-typescript: cribbage.js timing
 
 .PHONY: clean
 clean:
-	rm -rf cribbage-nim cribbage-cpp cribbage.js node_modules cribbage-rust/Cargo.lock $(TIMINGLOG)
+	rm -rf cribbage-nim cribbage-c cribbage-cpp cribbage.js node_modules cribbage-rust/Cargo.lock $(TIMINGLOG)
 	cd cribbage-rust && cargo clean
 
 .PHONY: timing
