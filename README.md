@@ -53,14 +53,14 @@ standard deviation means you're more likely to get the average score.)
 
 ### Performance
 
-| Real | Sys | User | Language |
-| --- | --- | --- | --- |
-| 0.26 | 0.26 | 0.00 | c |
-| 0.51 | 0.50 | 0.00 | cpp |
-| 0.54 | 0.54 | 0.00 | rust |
-| 2.64 | 2.84 | 0.03 | typescript |
-| 14.17 | 14.17 | 0.00 | nim |
-| 43.07 | 43.06 | 0.00 | python |
+| Elapsed (s) | Normalized | Language |
+| ----- | ----- | --- |
+|  0.26 |   1.0 | c |
+|  0.51 |   2.0 | cpp |
+|  0.54 |   2.1 | rust |
+|  2.58 |   9.9 | typescript |
+| 14.06 |  54.1 | nim |
+| 42.96 | 165.2 | python |
 
 ### Run All
 

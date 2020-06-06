@@ -42,7 +42,7 @@ TSCFLAGS = \
 
 TIMINGLOG = timing.log~
 TIMING = time --output=$(TIMINGLOG) --append \
---format='| %e | %U | %S | $(patsubst test-%,%,$@) |'
+--format='%e $(patsubst test-%,%,$@)'
 
 ifdef TIMING
   HAND = \
@@ -64,7 +64,7 @@ endif
 .PHONY: all
 all: test-c test-rust test-cpp test-typescript test-nim test-python
 ifdef TIMING
-	cat $(TIMINGLOG)
+	./format-timing $(TIMINGLOG)
 endif
 
 cribbage-c: cribbage.c
@@ -118,7 +118,5 @@ clean:
 .PHONY: timing
 timing:
 ifdef TIMING
-	rm -f $(TIMINGLOG)
-	echo '| Real | Sys | User | Language |' >$(TIMINGLOG)
-	echo '| --- | --- | --- | --- |' >>$(TIMINGLOG)
+	true > $(TIMINGLOG)
 endif

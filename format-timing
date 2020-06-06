@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+#
+# Reformat the timing log as a markdown table
+#
+import sys
+
+_, timing_log = sys.argv
+
+rows = []
+with open(timing_log, 'rt') as fh:
+    for line in fh:
+        elapsed, language = line.split()
+        rows.append((float(elapsed), language))
+rows.sort()
+print(rows)
+
+fastest = rows[0][0]
+print(fastest)
+
+print('| Elapsed (s) | Normalized | Language |')
+print('| ----- | ----- | --- |')
+
+for elapsed, language in rows:
+    print(f'| {elapsed:5.2f} | {elapsed / fastest:5.1f} | {language} |')
