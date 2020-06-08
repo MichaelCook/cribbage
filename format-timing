@@ -12,10 +12,8 @@ with open(timing_log, 'rt') as fh:
         elapsed, language = line.split()
         rows.append((float(elapsed), language))
 rows.sort()
-print(rows)
 
 fastest = rows[0][0]
-print(fastest)
 
 print('| Elapsed (s) | Normalized | Language |')
 print('| ----- | ----- | --- |')
