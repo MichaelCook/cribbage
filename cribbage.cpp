@@ -197,6 +197,8 @@ Hand make_hand(char const *hand) {
     }
     ++s;
   }
+  if (rank != 0)
+      throw std::runtime_error("Malformed hand '" + std::string(hand));
   if (verbose)
     cout << __func__ << ": |" << h << '|' << endl;
   return h;

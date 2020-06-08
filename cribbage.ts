@@ -147,6 +147,9 @@ class Hand {
                 throw new Error('Malformed hand: ' + text);
             }
         }
+        if (rank != null) {
+            throw new Error('Malformed hand: ' + text);
+        }
         return hand;
     }
 

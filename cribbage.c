@@ -193,6 +193,8 @@ static Hand* Hand_make(Hand* hand, char const *text)
             die("Malformed hand '%s'", text);
         }
     }
+    if (rank != 0)
+        die("Malformed hand '%s'", text);
     return hand;
 }
 
@@ -480,16 +482,16 @@ static void Statistics_init(Statistics* this, Tally const* t, int num_hands)
     this->stdev = stdev;
 }
 
-static char const* Statistics_toString(Statistics const* s, char* buf, size_t size)
+static char const* Statistics_toString(Statistics const* this, char* buf, size_t size)
 {
-    snprintf(buf, size, "%.1f %.1f %d..%d", s->mean, s->stdev, s->min, s->max);
+    snprintf(buf, size, "%.1f %.1f %d..%d", this->mean, this->stdev, this->min, this->max);
     return buf;
 }
 
-static void Statistics_print(Statistics const* s)
+static void Statistics_print(Statistics const* this)
 {
     char buf[64];
-    printf("%s", Statistics_toString(s, buf, sizeof(buf)));
+    printf("%s", Statistics_toString(this, buf, sizeof(buf)));
 }
 
 #define MAX_CHOOSE 3
@@ -510,9 +512,9 @@ static void Choose_init(Choose* this, Hand const* hand, size_t num_choose, Hand*
     this->hand = hand;
     this->num_choose = num_choose;
     this->chosen = chosen;
-    this->yielded = false;
     this->i = 0;
     this->i_stack_depth = 0;
+    this->yielded = false;
 }
 
 static bool Choose_next(Choose* this)
