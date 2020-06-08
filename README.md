@@ -7,7 +7,8 @@ This repo contains implementations in multiple computer languages:
 
 * C
 * C++
-* Nim
+* Go (golang)
+* Nim (nimlang)
 * Python
 * Rust
 * TypeScript
@@ -56,11 +57,12 @@ standard deviation means you're more likely to get the average score.)
 | Elapsed (s) | Normalized | Language |
 | ----- | ----- | --- |
 |  0.26 |   1.0 | c |
-|  0.51 |   2.0 | cpp |
 |  0.54 |   2.1 | rust |
-|  2.58 |   9.9 | typescript |
-| 14.06 |  54.1 | nim |
-| 42.96 | 165.2 | python |
+|  0.55 |   2.1 | cpp |
+|  2.55 |   9.8 | typescript |
+|  4.20 |  16.2 | go |
+| 14.13 |  54.3 | nim |
+| 42.54 | 163.6 | python |
 
 ### Run All
 

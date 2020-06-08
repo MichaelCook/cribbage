@@ -62,7 +62,7 @@ else
 endif
 
 .PHONY: all
-all: test-c test-rust test-cpp test-typescript test-nim test-python
+all: test-c test-rust test-cpp test-go test-typescript test-nim test-python
 ifdef TIMING
 	./format-timing $(TIMINGLOG)
 endif
@@ -86,6 +86,10 @@ cribbage.js: cribbage.ts node_modules
 node_modules:
 	npm install @types/node
 
+.PHONY: cribbage-go
+cribbage-go: cribbage.go timing
+	go build -o $@ cribbage.go
+
 .PHONY: test-c
 test-c: cribbage-c timing
 	$(TIMING) ./cribbage-c $(HAND)
@@ -102,6 +106,10 @@ test-nim: cribbage-nim timing
 test-python: timing
 	$(TIMING) ./cribbage.py $(HAND)
 
+.PHONY: test-go
+test-go: cribbage-go timing
+	$(TIMING) ./cribbage-go $(HAND)
+
 .PHONY: test-rust
 test-rust: cribbage-rust timing
 	$(TIMING) cribbage-rust/target/release/cribbage $(HAND)
@@ -112,7 +120,7 @@ test-typescript: cribbage.js timing
 
 .PHONY: clean
 clean:
-	rm -rf cribbage-nim cribbage-c cribbage-cpp cribbage.js node_modules cribbage-rust/Cargo.lock $(TIMINGLOG)
+	rm -rf cribbage-nim cribbage-c cribbage-cpp cribbage-go cribbage.js node_modules cribbage-rust/Cargo.lock $(TIMINGLOG)
 	cd cribbage-rust && cargo clean
 
 .PHONY: timing
