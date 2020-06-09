@@ -102,5 +102,9 @@ node cribbage.js 5H-5C-5S-JD-4C-4D
 ./cribbage.py 5H-5C-5S-JD-4C-4D
 (same output)
 
+go build -o cribbage-go cribbage.go
+./cribbage-go 5H-5C-5S-JD-4C-4D
+(same output)
+
 $
 ```
