@@ -511,8 +511,6 @@ func analyzeHand(hand handT) {
 }
 
 func main() {
-    fmt.Println("numScores:", numScores)
-
     equals("5H 5C 5S JD 5D", makeHand("5H 5C 5S JD 5D").String())
     equals("5H 5C 5S JD 5D", makeHand("5h5c5sjd5d").String())
     equals("AH AS JH AC AD", makeHand("ah-as-jh-ac-ad").String())
