@@ -56,13 +56,13 @@ standard deviation means you're more likely to get the average score.)
 
 | Elapsed (s) | Normalized | Language |
 | ----- | ----- | --- |
-|  0.26 |   1.0 | c |
-|  0.54 |   2.1 | rust |
-|  0.55 |   2.1 | cpp |
-|  2.55 |   9.8 | typescript |
-|  4.20 |  16.2 | go |
-| 14.13 |  54.3 | nim |
-| 42.54 | 163.6 | python |
+|  0.25 |   1.0 | c |
+|  0.53 |   2.1 | rust |
+|  0.54 |   2.2 | cpp |
+|  2.47 |   9.9 | go |
+|  2.55 |  10.2 | typescript |
+| 13.97 |  55.9 | nim |
+| 41.79 | 167.2 | python |
 
 ### Run All
 

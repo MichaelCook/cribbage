@@ -416,35 +416,51 @@ func makeStatistics(tally tallyT, numHands int) statisticsT {
     return statisticsT{mean, stdev, min, max}
 }
 
-func choose(hand handT, numChoose int) <-chan handT {
-    ch := make(chan handT);
-    go func () {
-        chosen := handT{}
-        i := 0
-        iStack := []int{}
-        for {
-            if chosen.numCards == numChoose {
-                ch <- chosen
-                chosen.pop()
-                // i = iStack.pop() + 1
-                i = iStack[len(iStack) - 1] + 1
-                iStack = iStack[:len(iStack)-1]
-            } else if i != hand.numCards {
-                chosen.push(hand.cards()[i])
-                iStack = append(iStack, i)
-                i++
-            } else if len(iStack) > 0 {
-                chosen.pop()
-                // i = iStack.pop() + 1
-                i = iStack[len(iStack) - 1] + 1
-                iStack = iStack[:len(iStack)-1]
-            } else {
-                break
-            }
+type chooseT struct {
+    hand handT
+    numChoose int
+    chosen handT
+    i int
+    iStack []int
+    resume bool
+}
+
+/* A chan-based implementation of `choose` was measured to be 56% slower than
+   the following func-based implementation */
+
+func choose(hand handT, numChoose int) *chooseT {
+    c := new(chooseT)
+    c.hand = hand
+    c.numChoose = numChoose
+    return c
+}
+
+func (c *chooseT) more() bool {
+    if c.resume {
+        c.resume = false
+        c.chosen.pop()
+        // i = iStack.pop() + 1
+        c.i = c.iStack[len(c.iStack) - 1] + 1
+        c.iStack = c.iStack[:len(c.iStack)-1]
+    }
+    for {
+        if c.chosen.numCards == c.numChoose {
+            c.resume = true
+            return true
         }
-        close(ch)
-    } ();
-    return ch
+        if c.i != c.hand.numCards {
+            c.chosen.push(c.hand.cards()[c.i])
+            c.iStack = append(c.iStack, c.i)
+            c.i++
+        } else if len(c.iStack) > 0 {
+            c.chosen.pop()
+            // i = iStack.pop() + 1
+            c.i = c.iStack[len(c.iStack) - 1] + 1
+            c.iStack = c.iStack[:len(c.iStack)-1]
+        } else {
+            return false
+        }
+    }
 }
 
 func makeDeck(exclude handT) handT {
@@ -466,10 +482,11 @@ func analyzeHand(hand handT) {
       Find all possible pairs of cards to discard to the crib.
       There are C(6,2)=15 possible discards in a cribbage hand.
      */
-    for discard := range choose(hand, 2) {
+    discard := choose(hand, 2)
+    for discard.more() {
         keep := handT{}
         for _, card := range hand.cards() {
-            if !discard.has(card) {
+            if !discard.chosen.has(card) {
                 keep.push(card)
             }
         }
@@ -480,16 +497,17 @@ func analyzeHand(hand handT) {
         mineTally := tallyT{}    // scores when the crib is mine
         theirsTally := tallyT{}  // scores then the crib is theirs
         numHands := 0
-        for chosen := range choose(deck, 3) {
+        dealt := choose(deck, 3)
+        for dealt.more() {
             numHands++
-            cut := chosen.slots[2]
+            cut := dealt.chosen.slots[2]
 
             hold := keep
             hold.push(cut)
 
-            crib := discard
-            crib.push(chosen.slots[0])
-            crib.push(chosen.slots[1])
+            crib := discard.chosen
+            crib.push(dealt.chosen.slots[0])
+            crib.push(dealt.chosen.slots[1])
             crib.push(cut)
 
             holdScore := scoreHand(hold, false)
@@ -506,7 +524,7 @@ func analyzeHand(hand handT) {
         ifMine := makeStatistics(mineTally, numHands)
         ifTheirs := makeStatistics(theirsTally, numHands)
 
-        fmt.Printf("%s [%s] [%s]\n", discard, ifMine, ifTheirs)
+        fmt.Printf("%s [%s] [%s]\n", discard.chosen, ifMine, ifTheirs)
     }
 }
 
