@@ -147,6 +147,9 @@ impl Hand {
                 panic!("Malformed hand: {}", text);
             }
         }
+        if rank.is_some() {
+            panic!("Malformed hand: {}", text)
+        }
         hand
     }
 
