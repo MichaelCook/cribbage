@@ -1,5 +1,12 @@
 /* Copyright (c) 2020, Michael Cook <michael@waxrat.com>. All rights reserved. */
 
+/*
+ Analyze cribbage hands.
+
+ Given a cribbage hand (six cards), which two cards should you discard
+ to the crib to maximize your chances of getting the best score?
+*/
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
