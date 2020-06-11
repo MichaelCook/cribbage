@@ -198,7 +198,7 @@ impl fmt::Display for Hand {
     }
 }
 
-fn score_fifteens(hand: &Hand) -> i32 {
+fn score_15s(hand: &Hand) -> i32 {
     assert!(hand.num_cards() == 5);
 
     let a = hand.value(0);
@@ -401,7 +401,7 @@ fn score_nobs(hand: &Hand) -> i32 {
 }
 
 fn score_hand(hand: &Hand, is_crib: bool) -> i32 {
-    score_fifteens(&hand) +
+    score_15s(&hand) +
     score_pairs(&hand) +
     score_runs(&hand) +
     score_flush(&hand, is_crib) +
@@ -545,10 +545,10 @@ fn main() {
     assert!("5H 5C 5S JD 5D" == Hand::make("5h5c5sjd5d").to_string());
     assert!("AH AS JH AC AD" == Hand::make("ah-as-jh-ac-ad").to_string());
 
-    assert!(4 == score_fifteens(&Hand::make("AH 2H 3H JH QH")));
-    assert!(8 == score_fifteens(&Hand::make("5H 2H 3H JH QH")));
-    assert!(16 == score_fifteens(&Hand::make("5H 5S 5C 5D TH")));
-    assert!(8 == score_fifteens(&Hand::make("6C 6D 4D 4S 5D")));
+    assert!(4 == score_15s(&Hand::make("AH 2H 3H JH QH")));
+    assert!(8 == score_15s(&Hand::make("5H 2H 3H JH QH")));
+    assert!(16 == score_15s(&Hand::make("5H 5S 5C 5D TH")));
+    assert!(8 == score_15s(&Hand::make("6C 6D 4D 4S 5D")));
 
     assert!(12 == score_pairs(&Hand::make("5H 5S 5C 5D TH")));
     assert!(8 == score_pairs(&Hand::make("TS 5S 5C 5D TH")));

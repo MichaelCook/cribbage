@@ -122,7 +122,7 @@ assert '5H 5C 5S JD 5D' == str(make_hand('5H 5C 5S JD 5D'))
 assert '5H 5C 5S JD 5D' == str(make_hand('5h5c5sjd5d'))
 assert 'AH AS JH AC AD' == str(make_hand('ah-as-jh-ac-ad'))
 
-def score_fifteens(hand):
+def score_15s(hand):
     assert hand.size() == 5
 
     a = hand.value(0)
@@ -195,10 +195,10 @@ def score_fifteens(hand):
 
     return 2 * num_15s
 
-assert 4 == score_fifteens(make_hand('AH 2H 3H JH QH'))
-assert 8 == score_fifteens(make_hand('5H 2H 3H JH QH'))
-assert 16 == score_fifteens(make_hand('5H 5S 5C 5D TH'))
-assert 8 == score_fifteens(make_hand('6C 6D 4D 4S 5D'))
+assert 4 == score_15s(make_hand('AH 2H 3H JH QH'))
+assert 8 == score_15s(make_hand('5H 2H 3H JH QH'))
+assert 16 == score_15s(make_hand('5H 5S 5C 5D TH'))
+assert 8 == score_15s(make_hand('6C 6D 4D 4S 5D'))
 
 def score_pairs(hand):
     num_pairs = 0
@@ -319,7 +319,7 @@ assert 0 == score_nobs(make_hand('JH 2C 3C 4C 5C'))
 def score_hand(hand, is_crib):
     if isinstance(hand, str):
         hand = make_hand(hand)
-    return score_fifteens(hand) + \
+    return score_15s(hand) + \
         score_pairs(hand) + \
         score_runs(hand) + \
         score_flush(hand, is_crib) + \

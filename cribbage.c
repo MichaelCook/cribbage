@@ -217,7 +217,7 @@ static void Hand_print(Hand const* this)
     }
 }
 
-static int score_fifteens(Hand const* hand) {
+static int score_15s(Hand const* hand) {
     int a = Hand_value(hand, 0);
     int b = Hand_value(hand, 1);
     int c = Hand_value(hand, 2);
@@ -408,7 +408,7 @@ static int score_nobs(Hand const* hand)
 
 static int score_hand(Hand const* hand, bool is_crib)
 {
-    return score_fifteens(hand) +
+    return score_15s(hand) +
         score_pairs(hand) +
         score_runs(hand) +
         score_flush(hand, is_crib) +
@@ -649,10 +649,10 @@ int main(int argc __attribute__((unused)), char **argv)
 {
     Hand hand;
 
-    CHECK(4 == score_fifteens(Hand_make(&hand, "AH 2H 3H JH QH")));
-    CHECK(8 == score_fifteens(Hand_make(&hand, "5H 2H 3H JH QH")));
-    CHECK(16 == score_fifteens(Hand_make(&hand, "5H 5S 5C 5D TH")));
-    CHECK(8 == score_fifteens(Hand_make(&hand, "6C 6D 4D 4S 5D")));
+    CHECK(4 == score_15s(Hand_make(&hand, "AH 2H 3H JH QH")));
+    CHECK(8 == score_15s(Hand_make(&hand, "5H 2H 3H JH QH")));
+    CHECK(16 == score_15s(Hand_make(&hand, "5H 5S 5C 5D TH")));
+    CHECK(8 == score_15s(Hand_make(&hand, "6C 6D 4D 4S 5D")));
     CHECK(12 == score_pairs(Hand_make(&hand, "5H 5S 5C 5D TH")));
     CHECK(8 == score_pairs(Hand_make(&hand, "TS 5S 5C 5D TH")));
     CHECK(4 == score_pairs(Hand_make(&hand, "6C 6D 4D 4S 5D")));

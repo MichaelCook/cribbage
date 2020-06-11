@@ -210,7 +210,7 @@ equal(true, Hand.make('5H').has(new Card(Rank.Five, Suit.Heart)));
 equal(false, Hand.make('5C').has(new Card(Rank.Five, Suit.Heart)));
 equal(false, Hand.make('6H').has(new Card(Rank.Five, Suit.Heart)));
 
-function score_fifteens(hand: Hand): number {
+function score_15s(hand: Hand): number {
     equal(hand.cards.length, 5);
 
     const a = hand.value(0);
@@ -310,10 +310,10 @@ function score_fifteens(hand: Hand): number {
     return 2 * num_15s;
 }
 
-equal(4, score_fifteens(Hand.make('AH 2H 3H JH QH')));
-equal(8, score_fifteens(Hand.make('5H 2H 3H JH QH')));
-equal(16, score_fifteens(Hand.make('5H 5S 5C 5D TH')));
-equal(8, score_fifteens(Hand.make('6C 6D 4D 4S 5D')));
+equal(4, score_15s(Hand.make('AH 2H 3H JH QH')));
+equal(8, score_15s(Hand.make('5H 2H 3H JH QH')));
+equal(16, score_15s(Hand.make('5H 5S 5C 5D TH')));
+equal(8, score_15s(Hand.make('6C 6D 4D 4S 5D')));
 
 function score_pairs(hand: Hand): number {
     let num_pairs = 0;
@@ -452,7 +452,7 @@ equal(1, score_nobs(Hand.make("JH 2C 3C 4C 5H")));
 equal(0, score_nobs(Hand.make("JH 2C 3C 4C 5C")));
 
 function score_hand(hand: Hand, is_crib: boolean): number {
-    return score_fifteens(hand) +
+    return score_15s(hand) +
         score_pairs(hand) +
         score_runs(hand) +
         score_flush(hand, is_crib) +

@@ -112,7 +112,7 @@ assert "5H 5C 5S JD 5D" == $make_hand("5H 5C 5S JD 5D")
 assert "5H 5C 5S JD 5D" == $make_hand("5h5c5sjd5d")
 assert "AH AS JH AC AD" == $make_hand("ah-as-jh-ac-ad")
 
-proc score_fifteens(hand: Hand): int =
+proc score_15s(hand: Hand): int =
   assert hand.num_cards == 5
 
   let
@@ -187,10 +187,10 @@ proc score_fifteens(hand: Hand): int =
 
   return 2 * num_15s
 
-assert 4 == score_fifteens(make_hand("AH 2H 3H JH QH"))
-assert 8 == score_fifteens(make_hand("5H 2H 3H JH QH"))
-assert 16 == score_fifteens(make_hand("5H 5S 5C 5D TH"))
-assert 8 == score_fifteens(make_hand("6C 6D 4D 4S 5D"))
+assert 4 == score_15s(make_hand("AH 2H 3H JH QH"))
+assert 8 == score_15s(make_hand("5H 2H 3H JH QH"))
+assert 16 == score_15s(make_hand("5H 5S 5C 5D TH"))
+assert 8 == score_15s(make_hand("6C 6D 4D 4S 5D"))
 
 proc score_pairs(hand: Hand): int =
   var
@@ -320,7 +320,7 @@ assert 1 == score_nobs(make_hand("JH 2C 3C 4C 5H"))
 assert 0 == score_nobs(make_hand("JH 2C 3C 4C 5C"))
 
 proc score_hand(hand: Hand, is_crib: bool): int =
-  return score_fifteens(hand) +
+  return score_15s(hand) +
          score_pairs(hand) +
          score_runs(hand) +
          score_flush(hand, is_crib) +

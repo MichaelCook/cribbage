@@ -211,7 +211,7 @@ Hand make_hand(char const *hand) {
   return h;
 }
 
-int score_fifteens(Hand const &hand) {
+int score_15s(Hand const &hand) {
   auto a = hand.value(0);
   auto b = hand.value(1);
   auto c = hand.value(2);
@@ -398,7 +398,7 @@ int score_right_jack(Hand const &hand) {
 }
 
 int score_hand(Hand const &hand, bool is_crib) {
-  return score_fifteens(hand) +
+  return score_15s(hand) +
          score_pairs(hand) +
          score_runs(hand) +
          score_flush(hand, is_crib) +

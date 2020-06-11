@@ -205,7 +205,7 @@ constexpr Hand make_hand(std::string_view hand) {
   return h;
 }
 
-constexpr int score_fifteens(Hand const &hand) {
+constexpr int score_15s(Hand const &hand) {
   auto a = hand.value(0);
   auto b = hand.value(1);
   auto c = hand.value(2);
@@ -392,7 +392,7 @@ constexpr int score_right_jack(Hand const &hand) {
 }
 
 constexpr int score_hand(Hand const &hand, bool is_crib) {
-  return score_fifteens(hand) +
+  return score_15s(hand) +
          score_pairs(hand) +
          score_runs(hand) +
          score_flush(hand, is_crib) +
