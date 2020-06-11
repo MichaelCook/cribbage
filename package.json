@@ -1,0 +1,10 @@
+{
+    "license": "BSD-2-Clause",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/MichaelCook/cribbage.git"
+    },
+    "dependencies": {
+        "@types/node": "^14.0.13"
+    }
+}
