@@ -16,7 +16,8 @@
 #include <stdexcept>
 #include <utility>
 #include <cstring>
-#include <tuple>
+#include <compare>
+#include <string_view>
 
 namespace {
 
@@ -26,36 +27,31 @@ using std::endl;
 using Rank = int; // 'A', '2', '3', ..., 'J', 'Q', 'K'
 using Suit = int; // 'S', 'D', 'C', 'H'
 
-bool show_tallies = false;
-bool verbose = false;
+struct [[nodiscard]] Card {
+  Rank rank = 0;
+  Suit suit = 0;
 
-struct Card {
-  Rank rank;
-  Suit suit;
+  constexpr Card() noexcept = default;
 
-  Card() = default;
+  constexpr Card(Rank r, Suit s) noexcept : rank{r}, suit{s} {}
 
-  Card(Rank r, Suit s) : rank(r), suit(s) {}
+  constexpr auto operator<=>(Card const&) const noexcept = default;
 };
 
-bool operator==(Card const &a, Card const &b) {
-  return a.rank == b.rank && a.suit == b.suit;
-}
-
-struct Hand {
+struct [[nodiscard]] Hand {
   size_t num_cards = 0;
   static constexpr size_t max_cards = 52;
   Card cards[max_cards];
 
-  size_t size() const { return num_cards; }
+  constexpr size_t size() const noexcept { return num_cards; }
 
-  Card const &card(size_t i) const {
+  constexpr Card const &card(size_t i) const {
     if (i >= num_cards)
       throw std::runtime_error("No card " + std::to_string(i));
     return cards[i];
   }
 
-  int value(size_t i) const {
+  constexpr int value(size_t i) const {
     auto r = card(i).rank;
     switch (r) {
     case 'A':
@@ -79,7 +75,7 @@ struct Hand {
     }
   }
 
-  int order(size_t i) const {
+  constexpr int order(size_t i) const {
     auto r = card(i).rank;
     switch (r) {
     case 'A':
@@ -106,26 +102,31 @@ struct Hand {
     }
   }
 
-  void push(Card const &card) {
+  constexpr void push(Card const &card) {
     if (num_cards == max_cards)
       throw std::runtime_error("Too many cards in hand");
     cards[num_cards] = card;
     ++num_cards;
   }
 
-  void pop() {
+  constexpr void pop() {
     if (num_cards == 0)
       throw std::runtime_error("Empty hand");
     --num_cards;
   }
 
-  bool has(Card const &card) const {
+  constexpr bool has(Card const &card) const noexcept {
     for (size_t i = 0; i != num_cards; ++i)
       if (card == cards[i])
         return true;
     return false;
   }
 };
+
+void sort(Hand& hand)
+{
+    std::sort(hand.cards, hand.cards + hand.num_cards);
+}
 
 std::ostream &operator<<(std::ostream &os, Card const &card) {
   if (card.rank == 0)
@@ -148,31 +149,30 @@ std::ostream &operator<<(std::ostream &os, Hand const &hand) {
   return os;
 }
 
-bool operator<(Card const& a, Card const& b) {
-    return std::make_tuple(a.rank, a.suit) < std::make_tuple(b.rank, b.suit);
-}
-
-void sort(Hand& hand)
+constexpr char to_upper(char c) // std::toupper is not constexpr
 {
-    std::sort(hand.cards, hand.cards + hand.num_cards);
+    if (c >= 'a' && c <= 'z')
+        return c - 'a' + 'A';
+    return c;
 }
 
-Hand make_hand(char const *hand) {
-  if (verbose)
-    cout << __func__ << ": |" << hand << '|' << endl;
+constexpr bool is_space(char c) // std::isspace is not constexpr
+{
+    return c == ' ';
+}
+
+constexpr Hand make_hand(std::string_view hand) {
   Hand h;
   Rank rank = 0;
-  auto s = hand;
-  while (*s) {
-    auto c = std::toupper(*s);
+  for (auto c : hand) {
+    c = to_upper(c);
     switch (c) {
     case 'H':
     case 'C':
     case 'S':
     case 'D':
       if (rank == 0)
-        throw std::runtime_error("Malformed hand '" + std::string(hand) +
-                                 "' at '" + std::string(s) + '\'');
+        throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
       h.push(Card(rank, c));
       rank = 0;
       break;
@@ -190,28 +190,23 @@ Hand make_hand(char const *hand) {
     case 'Q':
     case 'K':
       if (rank != 0)
-        throw std::runtime_error("Malformed hand '" + std::string(hand) +
-                                 "' at '" + std::string(s) + '\'');
+        throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
       rank = c;
       break;
     case '-':
       break;
     default:
-      if (isspace(static_cast<unsigned char>(c)))
+      if (is_space(c))
         break;
-      throw std::runtime_error("Malformed hand '" + std::string(hand) +
-                               "' at '" + std::string(s) + '\'');
+      throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
     }
-    ++s;
   }
   if (rank != 0)
       throw std::runtime_error("Malformed hand '" + std::string(hand));
-  if (verbose)
-    cout << __func__ << ": |" << h << '|' << endl;
   return h;
 }
 
-int score_15s(Hand const &hand) {
+constexpr int score_15s(Hand const &hand) {
   auto a = hand.value(0);
   auto b = hand.value(1);
   auto c = hand.value(2);
@@ -282,7 +277,7 @@ int score_15s(Hand const &hand) {
   return 2 * num_15s;
 }
 
-int score_pairs(Hand const &hand) {
+constexpr int score_pairs(Hand const &hand) {
   size_t n = hand.size();
   int num_pairs = 0;
   for (size_t i = 0; i < n - 1; ++i) {
@@ -296,7 +291,7 @@ int score_pairs(Hand const &hand) {
   return 2 * num_pairs;
 }
 
-int score_runs(Hand const &hand) {
+constexpr int score_runs(Hand const &hand) {
   if (hand.size() != 5)
     throw std::runtime_error("Wrong number of cards in hand");
 
@@ -366,7 +361,7 @@ int score_runs(Hand const &hand) {
   return 0;
 }
 
-int score_flush(Hand const &hand, bool is_crib) {
+constexpr int score_flush(Hand const &hand, bool is_crib) {
   size_t n = hand.size();
   if (n != 5)
     throw std::runtime_error("Wrong number of cards in hand");
@@ -383,7 +378,7 @@ int score_flush(Hand const &hand, bool is_crib) {
   return 4;
 }
 
-int score_right_jack(Hand const &hand) {
+constexpr int score_right_jack(Hand const &hand) {
   size_t n = hand.size();
   if (n == 0)
     throw std::runtime_error("Empty hand");
@@ -397,7 +392,7 @@ int score_right_jack(Hand const &hand) {
   return 0;
 }
 
-int score_hand(Hand const &hand, bool is_crib) {
+constexpr int score_hand(Hand const &hand, bool is_crib) {
   return score_15s(hand) +
          score_pairs(hand) +
          score_runs(hand) +
@@ -405,13 +400,29 @@ int score_hand(Hand const &hand, bool is_crib) {
          score_right_jack(hand);
 }
 
-int score_hand(char const *hand, bool is_crib) {
+constexpr int score_hand(std::string_view hand, bool is_crib) {
   return score_hand(make_hand(hand), is_crib);
 }
+
+static_assert(score_hand("AH AS JH AC AD", false) == 12); // 4oak
+static_assert(score_hand("AH AS JH AC AH", false) == 13); // ...plus right jack
+static_assert(score_hand("AH 3H 7H TH JH", false) == 5);  // 5 hearts
+static_assert(score_hand("AH 3H 7H TH JH", true) == 5);   // 5 hearts but crib
+static_assert(score_hand("AH 3H 7H TH JS", false) == 4);  // 4 hearts
+static_assert(score_hand("AH 3H 7S TH JH", false) == 0);  // 4 hearts but with cut
+static_assert(score_hand("AH 3H 7H TH JS", true) == 0);   // 4 hearts but crib
+static_assert(score_hand("AH 2S 3C 5D JH", false) == 4 + 3); // 15/4 + run/3
+static_assert(score_hand("7H 7S 7C 8D 8H", false) == 12 + 6 + 2); // 15/12 + 3oak + 2oak
+static_assert(score_hand("AH 2H 3H 3S 3D", false) == 15); // triple run/3
+static_assert(score_hand("3H AH 3S 2H 3D", false) == 15); // triple run/3
+static_assert(score_hand("5H 5C 5S JD 5D", false) == 29);
+static_assert(score_hand("5H 5C 5S 5D JD", false) == 28);
+static_assert(score_hand("6C 4D 6D 4S 5D", false) == 24);
 
 // ---------------------------------------------------------------------------
 
 template <typename T>
+constexpr
 void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
                      Hand &chosen, T const &func) {
   if (chosen.size() == num_choose) {
@@ -427,12 +438,13 @@ void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
 }
 
 template <typename T>
+constexpr
 void for_each_choice(Hand const &hand, size_t num_choose, T const &func) {
   Hand discard;
   for_each_choice(hand, 0u, num_choose, discard, func);
 }
 
-Hand make_deck(Hand const &exclude) {
+constexpr Hand make_deck(Hand const &exclude) {
   Hand deck;
   for (auto suit : { 'H', 'C', 'D', 'S' }) {
     for (auto rank : { 'A', '2', '3', '4', '5', '6', '7',
@@ -445,7 +457,7 @@ Hand make_deck(Hand const &exclude) {
   return deck;
 }
 
-struct Tally {
+struct [[nodiscard]] Tally {
   static constexpr int max_score = 29 + 24; // 29 in hand, 24 in crib (44665)
   static constexpr int min_score = -29;     // 0 in hand, 29 in opp crib
   static constexpr size_t size = max_score - min_score + 1;
@@ -469,12 +481,14 @@ struct Tally {
   }
 };
 
-struct Statistics {
-  double mean, stdev;
-  int min, max;
+struct [[nodiscard]] Statistics {
+  double mean{};
+  double stdev{};
+  int min{};
+  int max{};
 
   Statistics() = delete;
-  Statistics(Tally const &t, int num_hands);
+  constexpr Statistics(Tally const &t, int num_hands);
 };
 
 std::ostream &operator<<(std::ostream &os, Statistics const &st) {
@@ -482,7 +496,7 @@ std::ostream &operator<<(std::ostream &os, Statistics const &st) {
   return os << st.mean << ' ' << st.stdev << ' ' << st.min << ".." << st.max;
 }
 
-Statistics::Statistics(Tally const &t, int num_hands) {
+constexpr Statistics::Statistics(Tally const &t, int num_hands) {
   min = 0;
   for (int i = 0; size_t(i) < Tally::size; ++i)
     if (t.scores[i] != 0) {
@@ -524,21 +538,14 @@ void analyze_hand(Hand const &hand) {
       if (!discard.has(card))
         keep.push(card);
     }
-    if (verbose)
-      cout << "from |" << hand << "| discard |"
-           << discard << "| keep |" << keep << "|\n";
 
     Hand deck{ make_deck(hand) };
-    if (verbose)
-      cout << "deck [" << deck.size() << "] |" << deck << "|\n";
     Tally mine_tally;           // scores when the crib is mine
     Tally theirs_tally;         // scores then the crib is theirs
     int num_hands = 0;
     for_each_choice(deck, 3, // C(46,3)=15180
     [&keep, &discard, &mine_tally, &theirs_tally, &num_hands](Hand const& chosen)
     {
-      if (verbose)
-        cout << "draw |" << chosen << "|\n";
       auto& cut = chosen.card(2);
 
       Hand hold(keep);
@@ -555,49 +562,13 @@ void analyze_hand(Hand const &hand) {
       auto mine_score = hold_score + crib_score;
       auto theirs_score = hold_score - crib_score;
 
-      if (verbose)
-        cout << "hold |" << hold << "|=" << hold_score
-             << ", crib |" << crib << "|=" << crib_score
-             << ' ' << mine_score
-             << ' ' << theirs_score
-             << (mine_score == 0 || theirs_score == 0 ? " *" : "")
-             << '\n';
-
       ++num_hands;
 
       mine_tally.increment(mine_score);
       theirs_tally.increment(theirs_score);
     });
 
-    if (verbose)
-      cout << endl;
-
     assert(num_hands == 15180); // sanity check, expecting C(46,3)
-
-    if (show_tallies) {
-      // column header
-      for (int score = Tally::min_score; score <= Tally::max_score; ++score)
-        cout << ' ' << std::setw(5) << score;
-      cout << '\n';
-
-      for (int score = Tally::min_score; score <= Tally::max_score; ++score) {
-        auto n = mine_tally.scores[score - Tally::min_score];
-        if (n)
-          cout << ' ' << std::setw(5) << n;
-        else
-          cout << "      ";
-      }
-      cout << " mine\n";
-
-      for (int score = Tally::min_score; score <= Tally::max_score; ++score) {
-        auto n = theirs_tally.scores[score - Tally::min_score];
-        if (n)
-          cout << ' ' << std::setw(5) << n;
-        else
-          cout << "      ";
-      }
-      cout << " theirs\n";
-    }
 
     /* Calculate statistics (mean, standard deviation, min and max)
        for both situations when it's my crib and when it's theirs. */
@@ -605,9 +576,6 @@ void analyze_hand(Hand const &hand) {
     Statistics if_theirs(theirs_tally, num_hands);
 
     cout << discard << " [" << if_mine << ']' << " [" << if_theirs << "]\n";
-
-    if (show_tallies)
-      cout << '\n';
   });
   cout << '\n';
 }
@@ -616,71 +584,28 @@ void analyze_hand(char const* hand) {
   analyze_hand(make_hand(hand));
 }
 
-// ---------------------------------------------------------------------------
-
-template <typename T>
-std::string to_string(T const& t)
-{
-    std::ostringstream ss;
-    ss << t;
-    return ss.str();
-}
-
-template <typename T, typename U>
-void expect_equal(T a, U b, char const *as, char const *bs, char const *file,
-                  int line) {
-  if (a != b)
-    std::clog << "EXPECT_EQUAL(" << as << '=' << a << ','
-              << bs << '=' << b
-              << ") failed at " << file << " line " << line
-              << endl;
-}
-
 } // namespace
-
-#define EXPECT_EQUAL(A, B) \
-  expect_equal(A, B, #A, #B, __FILE__, __LINE__)
 
 int main(int, char **argv)
 try {
 
-  while (auto arg = *++argv) {
-    if (strcmp(arg, "--show-tallies") == 0)
-      show_tallies = true;
-    else if (strcmp(arg, "--verbose") == 0)
-      verbose = true;
-    else
-      break;
-  }
-
-  // sanity checks
-  EXPECT_EQUAL(score_hand("AH AS JH AC AD", false), 12); // 4oak
-  EXPECT_EQUAL(score_hand("AH AS JH AC AH", false), 13); // ...plus right jack
-  EXPECT_EQUAL(score_hand("AH 3H 7H TH JH", false), 5);  // 5 hearts
-  EXPECT_EQUAL(score_hand("AH 3H 7H TH JH", true), 5);   // 5 hearts but crib
-  EXPECT_EQUAL(score_hand("AH 3H 7H TH JS", false), 4);  // 4 hearts
-  EXPECT_EQUAL(score_hand("AH 3H 7S TH JH", false), 0);  // 4 hearts but with cut
-  EXPECT_EQUAL(score_hand("AH 3H 7H TH JS", true), 0);   // 4 hearts but crib
-  EXPECT_EQUAL(score_hand("AH 2S 3C 5D JH", false), 4 + 3); // 15/4 + run/3
-  EXPECT_EQUAL(score_hand("7H 7S 7C 8D 8H", false), 12 + 6 + 2); // 15/12 + 3oak + 2oak
-  EXPECT_EQUAL(score_hand("AH 2H 3H 3S 3D", false), 15); // triple run/3
-  EXPECT_EQUAL(score_hand("3H AH 3S 2H 3D", false), 15); // triple run/3
-  EXPECT_EQUAL(score_hand("5H 5C 5S JD 5D", false), 29);
-  EXPECT_EQUAL(score_hand("5H 5C 5S 5D JD", false), 28);
-  EXPECT_EQUAL(score_hand("6C 4D 6D 4S 5D", false), 24);
-
   {
-      Tally t{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-               0, 0, 0, 0, 0, 907, 411, 1419, 650, 1855, 663, 1908, 931,
-               1671, 650, 1699, 530, 607, 137, 291, 160, 228, 111, 66, 106,
-               5, 61, 7, 26, 0, 30, 0, 41, 0, 4, 3, 0, 0, 0, 2, 0, 0, 1 };
-      Statistics s{t, 15180};
-      EXPECT_EQUAL(to_string(s), "22.9 0.8 16..53");
+    Tally t{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 907, 411, 1419, 650, 1855, 663, 1908, 931,
+             1671, 650, 1699, 530, 607, 137, 291, 160, 228, 111, 66, 106,
+             5, 61, 7, 26, 0, 30, 0, 41, 0, 4, 3, 0, 0, 0, 2, 0, 0, 1 };
+    Statistics s{t, 15180};
+    std::ostringstream ss;
+    ss << s;
+    if (ss.str() != "22.9 0.8 16..53")
+    {
+      throw "oops";
+    }
   }
 
-  while (*argv)
-    analyze_hand(*argv++);
+  while (*++argv)
+    analyze_hand(*argv);
 
   // with 29 in your hand, what's the most you could have in the crib?
   if ((false)) {

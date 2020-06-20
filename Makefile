@@ -10,15 +10,14 @@ CFLAGS = \
   -Wno-padded \
   -std=c2x \
 
-CXX = clang++
+CXX = g++-10
 
 CXXFLAGS = \
   -O3 \
   -Werror \
   -Wpedantic \
-  -Weverything \
-  -Wno-c++98-compat \
-  -std=c++2a \
+  -Wall \
+  -std=c++20 \
 
 ifdef DEBUG
   CFLAGS += -fsanitize=address

@@ -57,8 +57,8 @@ standard deviation means you're more likely to get the average score.)
 | Elapsed (s) | Normalized | Language |
 | ----- | ----- | --- |
 |  0.25 |   1.0 | c |
+|  0.41 |   1.5 | cpp |
 |  0.53 |   2.1 | rust |
-|  0.54 |   2.2 | cpp |
 |  2.47 |   9.9 | go |
 |  2.55 |  10.2 | typescript |
 | 13.97 |  55.9 | nim |
