@@ -461,13 +461,13 @@ function score_hand(hand: Hand, is_crib: boolean): number {
 
 equal(12, score_hand(Hand.make("AH AS JH AC AD"), false)); // 4oak ("of a kind")
 equal(13, score_hand(Hand.make("AH AS JD AC AD"), false)); // ...plus right jack
-equal(5, score_hand(Hand.make("AH 3H 7H TH JH"), false));  // 5 hearts
-equal(5, score_hand(Hand.make("AH 3H 7H TH JH"), true));   // 5 hearts but crib
-equal(4, score_hand(Hand.make("AH 3H 7H TH JS"), false));  // 4 hearts
-equal(0, score_hand(Hand.make("AH 3H 7S TH JH"), false));  // 4 hearts but with cut
-equal(0, score_hand(Hand.make("AH 3H 7H TH JS"), true));   // 4 hearts but crib
-equal(4 + 3, score_hand(Hand.make("AH 2S 3C 5D JH"), false)); // 15/4 + run/3
-equal(12 + 6 + 2, score_hand(Hand.make("7H 7S 7C 8D 8H"), false)); // 15/12 + 3oak + 2oak
+equal( 5, score_hand(Hand.make("AH 3H 7H TH JH"), false)); // 5 hearts
+equal( 5, score_hand(Hand.make("AH 3H 7H TH JH"), true));  // 5 hearts but crib
+equal( 4, score_hand(Hand.make("AH 3H 7H TH JS"), false)); // 4 hearts
+equal( 0, score_hand(Hand.make("AH 3H 7S TH JH"), false)); // 4 hearts but with cut
+equal( 0, score_hand(Hand.make("AH 3H 7H TH JS"), true));  // 4 hearts but crib
+equal( 7, score_hand(Hand.make("AH 2S 3C 5D JH"), false)); // 15/4 + run/3
+equal(20, score_hand(Hand.make("7H 7S 7C 8D 8H"), false)); // 15/12 + 3oak + 2oak
 equal(15, score_hand(Hand.make("AH 2H 3H 3S 3D"), false)); // triple run/3
 equal(15, score_hand(Hand.make("3H AH 3S 2H 3D"), false)); // triple run/3
 equal(29, score_hand(Hand.make("5H 5C 5S JD 5D"), false));
@@ -580,11 +580,11 @@ class Statistics {
 
 {
     let t = new Tally();
-    const scores = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    const scores = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 907, 411, 1419, 650, 1855, 663, 1908, 931,
         1671, 650, 1699, 530, 607, 137, 291, 160, 228, 111, 66, 106,
-        5, 61, 7, 26, 0, 30, 0, 41, 0, 4, 3, 0, 0, 0, 2, 0, 0, 1 ];
+        5, 61, 7, 26, 0, 30, 0, 41, 0, 4, 3, 0, 0, 0, 2, 0, 0, 1];
     for (const i in scores) {
         t.scores[i] = scores[i];
     }

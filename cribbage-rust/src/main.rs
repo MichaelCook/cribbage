@@ -545,14 +545,14 @@ fn main() {
     assert!("5H 5C 5S JD 5D" == Hand::make("5h5c5sjd5d").to_string());
     assert!("AH AS JH AC AD" == Hand::make("ah-as-jh-ac-ad").to_string());
 
-    assert!(4 == score_15s(&Hand::make("AH 2H 3H JH QH")));
-    assert!(8 == score_15s(&Hand::make("5H 2H 3H JH QH")));
+    assert!( 4 == score_15s(&Hand::make("AH 2H 3H JH QH")));
+    assert!( 8 == score_15s(&Hand::make("5H 2H 3H JH QH")));
     assert!(16 == score_15s(&Hand::make("5H 5S 5C 5D TH")));
-    assert!(8 == score_15s(&Hand::make("6C 6D 4D 4S 5D")));
+    assert!( 8 == score_15s(&Hand::make("6C 6D 4D 4S 5D")));
 
     assert!(12 == score_pairs(&Hand::make("5H 5S 5C 5D TH")));
-    assert!(8 == score_pairs(&Hand::make("TS 5S 5C 5D TH")));
-    assert!(4 == score_pairs(&Hand::make("6C 6D 4D 4S 5D")));
+    assert!( 8 == score_pairs(&Hand::make("TS 5S 5C 5D TH")));
+    assert!( 4 == score_pairs(&Hand::make("6C 6D 4D 4S 5D")));
 
     assert!(9 == score_runs(&Hand::make("AH 2H 3H 3D 3C")));
     assert!(9 == score_runs(&Hand::make("KH KD KC JH QH")));  // same pattern A2333
@@ -587,13 +587,13 @@ fn main() {
 
     assert!(12 == score_hand(&Hand::make("AH AS JH AC AD"), false)); // 4oak ("of a kind")
     assert!(13 == score_hand(&Hand::make("AH AS JD AC AD"), false)); // ...plus right jack
-    assert!(5 == score_hand(&Hand::make("AH 3H 7H TH JH"), false));  // 5 hearts
-    assert!(5 == score_hand(&Hand::make("AH 3H 7H TH JH"), true));   // 5 hearts but crib
-    assert!(4 == score_hand(&Hand::make("AH 3H 7H TH JS"), false));  // 4 hearts
-    assert!(0 == score_hand(&Hand::make("AH 3H 7S TH JH"), false));  // 4 hearts but with cut
-    assert!(0 == score_hand(&Hand::make("AH 3H 7H TH JS"), true));   // 4 hearts but crib
-    assert!(4 + 3 == score_hand(&Hand::make("AH 2S 3C 5D JH"), false)); // 15/4 + run/3
-    assert!(12 + 6 + 2 == score_hand(&Hand::make("7H 7S 7C 8D 8H"), false)); // 15/12 + 3oak + 2oak
+    assert!( 5 == score_hand(&Hand::make("AH 3H 7H TH JH"), false)); // 5 hearts
+    assert!( 5 == score_hand(&Hand::make("AH 3H 7H TH JH"), true));  // 5 hearts but crib
+    assert!( 4 == score_hand(&Hand::make("AH 3H 7H TH JS"), false)); // 4 hearts
+    assert!( 0 == score_hand(&Hand::make("AH 3H 7S TH JH"), false)); // 4 hearts but with cut
+    assert!( 0 == score_hand(&Hand::make("AH 3H 7H TH JS"), true));  // 4 hearts but crib
+    assert!( 7 == score_hand(&Hand::make("AH 2S 3C 5D JH"), false)); // 15/4 + run/3
+    assert!(20 == score_hand(&Hand::make("7H 7S 7C 8D 8H"), false)); // 15/12 + 3oak + 2oak
     assert!(15 == score_hand(&Hand::make("AH 2H 3H 3S 3D"), false)); // triple run/3
     assert!(15 == score_hand(&Hand::make("3H AH 3S 2H 3D"), false)); // triple run/3
     assert!(29 == score_hand(&Hand::make("5H 5C 5S JD 5D"), false));

@@ -578,13 +578,13 @@ func main() {
     equali( 0, scoreRuns(makeHand("AH 8H 3H JH TH")))
     equali(12, scoreRuns(makeHand("6C 6D 4D 4S 5D")))
 
-    equali(5, scoreFlush(makeHand("5H 6H 7H 8H 9H"), false))
-    equali(4, scoreFlush(makeHand("5H 6H 7H 8H 9D"), false))
-    equali(0, scoreFlush(makeHand("5H 6H 7H 8H 9D"), true))
-    equali(0, scoreFlush(makeHand("5H 6H 7H 8D 9D"), false))
+    equali( 5, scoreFlush(makeHand("5H 6H 7H 8H 9H"), false))
+    equali( 4, scoreFlush(makeHand("5H 6H 7H 8H 9D"), false))
+    equali( 0, scoreFlush(makeHand("5H 6H 7H 8H 9D"), true))
+    equali( 0, scoreFlush(makeHand("5H 6H 7H 8D 9D"), false))
 
-    equali(1, scoreNobs(makeHand("JH 2C 3C 4C 5H")))
-    equali(0, scoreNobs(makeHand("JH 2C 3C 4C 5C")))
+    equali( 1, scoreNobs(makeHand("JH 2C 3C 4C 5H")))
+    equali( 0, scoreNobs(makeHand("JH 2C 3C 4C 5C")))
 
     equali(12, scoreHand(makeHand("AH AS JH AC AD"), false)) // 4oak ("of a kind")
     equali(13, scoreHand(makeHand("AH AS JD AC AD"), false)) // ...plus right jack

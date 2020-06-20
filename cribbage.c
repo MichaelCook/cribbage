@@ -649,50 +649,55 @@ int main(int argc __attribute__((unused)), char **argv)
 {
     Hand hand;
 
-    CHECK(4 == score_15s(Hand_make(&hand, "AH 2H 3H JH QH")));
-    CHECK(8 == score_15s(Hand_make(&hand, "5H 2H 3H JH QH")));
+    CHECK( 4 == score_15s(Hand_make(&hand, "AH 2H 3H JH QH")));
+    CHECK( 8 == score_15s(Hand_make(&hand, "5H 2H 3H JH QH")));
     CHECK(16 == score_15s(Hand_make(&hand, "5H 5S 5C 5D TH")));
-    CHECK(8 == score_15s(Hand_make(&hand, "6C 6D 4D 4S 5D")));
+    CHECK( 8 == score_15s(Hand_make(&hand, "6C 6D 4D 4S 5D")));
+
     CHECK(12 == score_pairs(Hand_make(&hand, "5H 5S 5C 5D TH")));
-    CHECK(8 == score_pairs(Hand_make(&hand, "TS 5S 5C 5D TH")));
-    CHECK(4 == score_pairs(Hand_make(&hand, "6C 6D 4D 4S 5D")));
-    CHECK(9 == score_runs(Hand_make(&hand, "AH 2H 3H 3D 3C")));
-    CHECK(9 == score_runs(Hand_make(&hand, "KH KD KC JH QH")));  // same pattern A2333
-    CHECK(9 == score_runs(Hand_make(&hand, "AH 2H 2D 2C 3H")));
-    CHECK(9 == score_runs(Hand_make(&hand, "AH AD AC 2H 3H")));
-    CHECK(8 == score_runs(Hand_make(&hand, "AH 2H 3H 4H 4D")));
-    CHECK(8 == score_runs(Hand_make(&hand, "AH 2H 3H 3D 4H")));
-    CHECK(8 == score_runs(Hand_make(&hand, "AH 2H 2C 3H 4H")));
-    CHECK(8 == score_runs(Hand_make(&hand, "AS AH 2H 3H 4H")));
-    CHECK(6 == score_runs(Hand_make(&hand, "JH AH 2H 3D 3H")));
-    CHECK(6 == score_runs(Hand_make(&hand, "JH AH 2S 2H 3H")));
-    CHECK(6 == score_runs(Hand_make(&hand, "JH AH AS 2H 3H")));
-    CHECK(6 == score_runs(Hand_make(&hand, "AH 2H 3S 3H JH")));
-    CHECK(6 == score_runs(Hand_make(&hand, "AH 2H 2S 3H JH")));
-    CHECK(6 == score_runs(Hand_make(&hand, "AH AS 2H 3H JH")));
-    CHECK(5 == score_runs(Hand_make(&hand, "AH 2H 3H 4H 5H")));
-    CHECK(4 == score_runs(Hand_make(&hand, "JH AH 2H 3H 4H")));
-    CHECK(4 == score_runs(Hand_make(&hand, "AH 2H 3H 4H JH")));
-    CHECK(3 == score_runs(Hand_make(&hand, "JH QH AH 2H 3H")));
-    CHECK(3 == score_runs(Hand_make(&hand, "JH AH 2H 3H TH")));
-    CHECK(3 == score_runs(Hand_make(&hand, "AH 2H 3H JH TH")));
-    CHECK(0 == score_runs(Hand_make(&hand, "AH 8H 3H JH TH")));
+    CHECK( 8 == score_pairs(Hand_make(&hand, "TS 5S 5C 5D TH")));
+    CHECK( 4 == score_pairs(Hand_make(&hand, "6C 6D 4D 4S 5D")));
+
+    CHECK( 9 == score_runs(Hand_make(&hand, "AH 2H 3H 3D 3C")));
+    CHECK( 9 == score_runs(Hand_make(&hand, "KH KD KC JH QH")));  // same pattern A2333
+    CHECK( 9 == score_runs(Hand_make(&hand, "AH 2H 2D 2C 3H")));
+    CHECK( 9 == score_runs(Hand_make(&hand, "AH AD AC 2H 3H")));
+    CHECK( 8 == score_runs(Hand_make(&hand, "AH 2H 3H 4H 4D")));
+    CHECK( 8 == score_runs(Hand_make(&hand, "AH 2H 3H 3D 4H")));
+    CHECK( 8 == score_runs(Hand_make(&hand, "AH 2H 2C 3H 4H")));
+    CHECK( 8 == score_runs(Hand_make(&hand, "AS AH 2H 3H 4H")));
+    CHECK( 6 == score_runs(Hand_make(&hand, "JH AH 2H 3D 3H")));
+    CHECK( 6 == score_runs(Hand_make(&hand, "JH AH 2S 2H 3H")));
+    CHECK( 6 == score_runs(Hand_make(&hand, "JH AH AS 2H 3H")));
+    CHECK( 6 == score_runs(Hand_make(&hand, "AH 2H 3S 3H JH")));
+    CHECK( 6 == score_runs(Hand_make(&hand, "AH 2H 2S 3H JH")));
+    CHECK( 6 == score_runs(Hand_make(&hand, "AH AS 2H 3H JH")));
+    CHECK( 5 == score_runs(Hand_make(&hand, "AH 2H 3H 4H 5H")));
+    CHECK( 4 == score_runs(Hand_make(&hand, "JH AH 2H 3H 4H")));
+    CHECK( 4 == score_runs(Hand_make(&hand, "AH 2H 3H 4H JH")));
+    CHECK( 3 == score_runs(Hand_make(&hand, "JH QH AH 2H 3H")));
+    CHECK( 3 == score_runs(Hand_make(&hand, "JH AH 2H 3H TH")));
+    CHECK( 3 == score_runs(Hand_make(&hand, "AH 2H 3H JH TH")));
+    CHECK( 0 == score_runs(Hand_make(&hand, "AH 8H 3H JH TH")));
     CHECK(12 == score_runs(Hand_make(&hand, "6C 6D 4D 4S 5D")));
-    CHECK(5 == score_flush(Hand_make(&hand, "5H 6H 7H 8H 9H"), false));
-    CHECK(4 == score_flush(Hand_make(&hand, "5H 6H 7H 8H 9D"), false));
-    CHECK(0 == score_flush(Hand_make(&hand, "5H 6H 7H 8H 9D"), true));
-    CHECK(0 == score_flush(Hand_make(&hand, "5H 6H 7H 8D 9D"), false));
-    CHECK(1 == score_nobs(Hand_make(&hand, "JH 2C 3C 4C 5H")));
-    CHECK(0 == score_nobs(Hand_make(&hand, "JH 2C 3C 4C 5C")));
+
+    CHECK( 5 == score_flush(Hand_make(&hand, "5H 6H 7H 8H 9H"), false));
+    CHECK( 4 == score_flush(Hand_make(&hand, "5H 6H 7H 8H 9D"), false));
+    CHECK( 0 == score_flush(Hand_make(&hand, "5H 6H 7H 8H 9D"), true));
+    CHECK( 0 == score_flush(Hand_make(&hand, "5H 6H 7H 8D 9D"), false));
+
+    CHECK( 1 == score_nobs(Hand_make(&hand, "JH 2C 3C 4C 5H")));
+    CHECK( 0 == score_nobs(Hand_make(&hand, "JH 2C 3C 4C 5C")));
+
     CHECK(12 == score_hand(Hand_make(&hand, "AH AS JH AC AD"), false)); // 4oak ("of a kind")
     CHECK(13 == score_hand(Hand_make(&hand, "AH AS JD AC AD"), false)); // ...plus right jack
-    CHECK(5 == score_hand(Hand_make(&hand, "AH 3H 7H TH JH"), false));  // 5 hearts
-    CHECK(5 == score_hand(Hand_make(&hand, "AH 3H 7H TH JH"), true));   // 5 hearts but crib
-    CHECK(4 == score_hand(Hand_make(&hand, "AH 3H 7H TH JS"), false));  // 4 hearts
-    CHECK(0 == score_hand(Hand_make(&hand, "AH 3H 7S TH JH"), false));  // 4 hearts but with cut
-    CHECK(0 == score_hand(Hand_make(&hand, "AH 3H 7H TH JS"), true));   // 4 hearts but crib
-    CHECK(4 + 3 == score_hand(Hand_make(&hand, "AH 2S 3C 5D JH"), false)); // 15/4 + run/3
-    CHECK(12 + 6 + 2 == score_hand(Hand_make(&hand, "7H 7S 7C 8D 8H"), false)); // 15/12 + 3oak + 2oak
+    CHECK( 5 == score_hand(Hand_make(&hand, "AH 3H 7H TH JH"), false)); // 5 hearts
+    CHECK( 5 == score_hand(Hand_make(&hand, "AH 3H 7H TH JH"), true));  // 5 hearts but crib
+    CHECK( 4 == score_hand(Hand_make(&hand, "AH 3H 7H TH JS"), false)); // 4 hearts
+    CHECK( 0 == score_hand(Hand_make(&hand, "AH 3H 7S TH JH"), false)); // 4 hearts but with cut
+    CHECK( 0 == score_hand(Hand_make(&hand, "AH 3H 7H TH JS"), true));  // 4 hearts but crib
+    CHECK( 7 == score_hand(Hand_make(&hand, "AH 2S 3C 5D JH"), false)); // 15/4 + run/3
+    CHECK(20 == score_hand(Hand_make(&hand, "7H 7S 7C 8D 8H"), false)); // 15/12 + 3oak + 2oak
     CHECK(15 == score_hand(Hand_make(&hand, "AH 2H 3H 3S 3D"), false)); // triple run/3
     CHECK(15 == score_hand(Hand_make(&hand, "3H AH 3S 2H 3D"), false)); // triple run/3
     CHECK(29 == score_hand(Hand_make(&hand, "5H 5C 5S JD 5D"), false));
