@@ -120,13 +120,13 @@ struct Hand {
 }
 
 impl Hand {
-    pub fn new() -> Hand { // TODO: impl Default?
+    pub fn new() -> Self { // TODO: impl Default?
         Hand {
             cards: Vec::with_capacity(52)
         }
     }
 
-    pub fn make(text: &str) -> Hand {
+    pub fn make(text: &str) -> Self {
         let mut hand = Hand::new();
         let mut rank: Option<Rank> = None;
         for c in text.to_uppercase().chars() {
@@ -153,7 +153,7 @@ impl Hand {
         hand
     }
 
-    pub fn from_vec(cards: Vec<&Card>) -> Hand {
+    pub fn from_vec(cards: Vec<&Card>) -> Self {
         let mut hand = Hand::new();
         for card in cards {
             hand.cards.push(*card);
@@ -431,7 +431,7 @@ struct Tally {
 }
 
 impl Tally {
-    pub fn new() -> Tally { // TODO: impl Default?
+    pub fn new() -> Self { // TODO: impl Default?
         Tally {
             scores: [0; NUM_SCORES as usize],
         }
@@ -457,7 +457,7 @@ impl fmt::Display for Statistics {
 }
 
 impl Statistics {
-    fn make(tally: Tally, num_hands: i32) -> Statistics {
+    fn make(tally: Tally, num_hands: i32) -> Self {
         let mut min = 0;
         for (i, score) in tally.scores.iter().enumerate() {
             if *score != 0 {
