@@ -18,6 +18,7 @@
 #include <cstring>
 #include <compare>
 #include <string_view>
+#include <type_traits>
 
 namespace {
 
@@ -425,6 +426,7 @@ template <typename T>
 constexpr
 void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
                      Hand &chosen, T const &func) {
+  static_assert(std::is_invocable<T, Hand const&>::value);
   if (chosen.size() == num_choose) {
     func(chosen);
     return;
@@ -440,6 +442,7 @@ void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
 template <typename T>
 constexpr
 void for_each_choice(Hand const &hand, size_t num_choose, T const &func) {
+  static_assert(std::is_invocable<T, Hand const&>::value);
   Hand discard;
   for_each_choice(hand, 0u, num_choose, discard, func);
 }
