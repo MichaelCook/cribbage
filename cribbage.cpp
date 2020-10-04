@@ -422,11 +422,16 @@ static_assert(score_hand("6C 4D 6D 4S 5D", false) == 24);
 
 // ---------------------------------------------------------------------------
 
-template <typename T>
+/* A ChoiceHandler is a type like `void f(Hand const& choice)`.  That is, a
+   function (or function-like object) that takes one argument, a `Hand const&`
+   object, and the returned value (if any) is ignored */
+template<typename T>
+concept ChoiceHandler = std::is_invocable<T, Hand const&>::value;
+
+template <ChoiceHandler T>
 constexpr
 void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
                      Hand &chosen, T const &func) {
-  static_assert(std::is_invocable<T, Hand const&>::value);
   if (chosen.size() == num_choose) {
     func(chosen);
     return;
@@ -439,10 +444,9 @@ void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
   }
 }
 
-template <typename T>
+template <ChoiceHandler T>
 constexpr
 void for_each_choice(Hand const &hand, size_t num_choose, T const &func) {
-  static_assert(std::is_invocable<T, Hand const&>::value);
   Hand discard;
   for_each_choice(hand, 0u, num_choose, discard, func);
 }
