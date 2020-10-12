@@ -426,7 +426,7 @@ static_assert(score_hand("6C 4D 6D 4S 5D", false) == 24);
    function (or function-like object) that takes one argument, a `Hand const&`
    object, and the returned value (if any) is ignored */
 template<typename T>
-concept ChoiceHandler = std::is_invocable<T, Hand const&>::value;
+concept ChoiceHandler = std::invocable<T, Hand const&>;
 
 template <ChoiceHandler T>
 constexpr
