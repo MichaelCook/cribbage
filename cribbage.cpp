@@ -596,6 +596,8 @@ void analyze_hand(char const* hand) {
 int main(int, char **argv)
 try {
 
+#ifndef NDEBUG
+  // unit test for Statistics
   {
     Tally t{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -610,6 +612,7 @@ try {
       throw "oops";
     }
   }
+#endif
 
   while (*++argv)
     analyze_hand(*argv);
