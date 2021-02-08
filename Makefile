@@ -20,8 +20,8 @@ CXXFLAGS = \
   -std=c++20 \
 
 ifdef DEBUG
-  CFLAGS += -fsanitize=address
-  CXXFLAGS += -fsanitize=address
+  CFLAGS += -g -fsanitize=address
+  CXXFLAGS += -g -fsanitize=address
 else
   CFLAGS += -DNDEBUG
   CXXFLAGS += -DNDEBUG
