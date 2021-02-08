@@ -24,7 +24,7 @@
 #  define constexpr
 #  define token_paste_(A, B) A ## B
 #  define token_paste(A, B) token_paste_(A, B)
-#  define static_assert(EXPR) int token_paste(once, __LINE__) = (assert(EXPR), 0)
+#  define static_assert(EXPR) [[maybe_unused]] int token_paste(once, __LINE__) = (assert(EXPR), 0)
 #endif
 
 namespace {
@@ -470,9 +470,9 @@ constexpr Hand make_deck(Hand const &exclude) {
 }
 
 struct [[nodiscard]] Tally {
-  static constexpr int max_score = 29 + 24; // 29 in hand, 24 in crib (44665)
-  static constexpr int min_score = -29;     // 0 in hand, 29 in opp crib
-  static constexpr size_t size = max_score - min_score + 1;
+  static constexpr const int max_score = 29 + 24; // 29 in hand, 24 in crib (44665)
+  static constexpr const int min_score = -29;     // 0 in hand, 29 in opp crib
+  static constexpr const size_t size = max_score - min_score + 1;
   int scores[size];
   void increment(int score)
   {
@@ -629,19 +629,19 @@ try {
 
   // with 29 in your hand, what's the most you could have in the crib?
   if ((false)) {
-      const auto hand{ make_hand("5H 5C 5S JD 5D") }; // 29 hand
-      const auto cut{ hand.cards[4] };
-      const auto deck{ make_deck(hand) };
-      int best = 0;
-      for_each_choice(deck, 4, [&](Hand crib) {
-          crib.push(cut);
-          auto score = score_hand(crib, true);
-          if (best <= score) {
-              sort(crib);
-              best = score;
-              cout << score << ' ' << crib << '\n';
-          }
-      });
+    const auto hand{ make_hand("5H 5C 5S JD 5D") }; // 29 hand
+    const auto cut{ hand.cards[4] };
+    const auto deck{ make_deck(hand) };
+    int best = 0;
+    for_each_choice(deck, 4, [&](Hand crib) {
+      crib.push(cut);
+      auto score = score_hand(crib, true);
+      if (best <= score) {
+        sort(crib);
+        best = score;
+        cout << score << ' ' << crib << '\n';
+      }
+    });
   }
 
 } catch (std::exception const &exc) {
