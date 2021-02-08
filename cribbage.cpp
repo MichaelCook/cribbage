@@ -20,6 +20,13 @@
 #include <string_view>
 #include <type_traits>
 
+#if 0 // 1 to facilitate constexpr/static_assert debugging
+#  define constexpr
+#  define token_paste_(A, B) A ## B
+#  define token_paste(A, B) token_paste_(A, B)
+#  define static_assert(EXPR) int token_paste(once, __LINE__) = (assert(EXPR), 0)
+#endif
+
 namespace {
 
 using std::cout;
@@ -162,10 +169,10 @@ constexpr bool is_space(char c) // std::isspace is not constexpr
     return c == ' ';
 }
 
-constexpr Hand make_hand(std::string_view hand) {
+constexpr Hand make_hand(std::string_view str) {
   Hand h;
   Rank rank = 0;
-  for (auto c : hand) {
+  for (auto c : str) {
     c = to_upper(c);
     switch (c) {
     case 'H':
@@ -173,7 +180,7 @@ constexpr Hand make_hand(std::string_view hand) {
     case 'S':
     case 'D':
       if (rank == 0)
-        throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
+        throw std::runtime_error("Malformed hand '" + std::string(str) + '\'');
       h.push(Card(rank, c));
       rank = 0;
       break;
@@ -191,7 +198,7 @@ constexpr Hand make_hand(std::string_view hand) {
     case 'Q':
     case 'K':
       if (rank != 0)
-        throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
+        throw std::runtime_error("Malformed hand '" + std::string(str) + '\'');
       rank = c;
       break;
     case '-':
@@ -199,11 +206,11 @@ constexpr Hand make_hand(std::string_view hand) {
     default:
       if (is_space(c))
         break;
-      throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
+      throw std::runtime_error("Malformed hand '" + std::string(str) + '\'');
     }
   }
   if (rank != 0)
-      throw std::runtime_error("Malformed hand '" + std::string(hand));
+      throw std::runtime_error("Malformed hand '" + std::string(str));
   return h;
 }
 
@@ -319,7 +326,7 @@ constexpr int score_runs(Hand const &hand) {
   }
 
   constexpr int X = -1; // match any rank
-  struct {
+  constexpr struct {
     int score;
     int delta[4];
   } const patterns[] = {
@@ -344,9 +351,7 @@ constexpr int score_runs(Hand const &hand) {
     {  3, { X, 1, 1, X } }, // xA23x
     {  3, { 1, 1, X, X } }, // A23xx
   };
-  constexpr auto num_patterns = sizeof(patterns) / sizeof(patterns[0]);
-  for (size_t i = 0; i < num_patterns; ++i) {
-    auto &pattern = patterns[i];
+  for (auto& pattern : patterns) {
     auto previous = orders[0];
     for (size_t j = 0;; ++j) {
       if (j == 4)
@@ -430,8 +435,8 @@ concept ChoiceHandler = std::invocable<T, Hand const&>;
 
 template <ChoiceHandler T>
 constexpr
-void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
-                     Hand &chosen, T const &func) {
+void for_each_choice_internal(Hand const &hand, size_t offset, size_t num_choose,
+                              Hand &chosen, T const &func) {
   if (chosen.size() == num_choose) {
     func(chosen);
     return;
@@ -439,7 +444,7 @@ void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
   while (offset != hand.size()) {
     chosen.push(hand.cards[offset]);
     ++offset;
-    for_each_choice(hand, offset, num_choose, chosen, func);
+    for_each_choice_internal(hand, offset, num_choose, chosen, func);
     chosen.pop();
   }
 }
@@ -448,7 +453,7 @@ template <ChoiceHandler T>
 constexpr
 void for_each_choice(Hand const &hand, size_t num_choose, T const &func) {
   Hand discard;
-  for_each_choice(hand, 0u, num_choose, discard, func);
+  for_each_choice_internal(hand, 0u, num_choose, discard, func);
 }
 
 constexpr Hand make_deck(Hand const &exclude) {
@@ -537,8 +542,9 @@ void analyze_hand(Hand const &hand) {
     There are C(6,2)=15 possible discards in a cribbage hand.
    */
   cout << "[ " << hand << " ]\n";
+  assert(hand.size() == 6);
 
-  for_each_choice(hand, 2, [&hand](Hand const &discard) {
+  for_each_choice(hand, 2, [&](Hand const &discard) {
     Hand keep;
     for (size_t i = 0; i != hand.size(); ++i) {
       auto &card = hand.card(i);
@@ -547,11 +553,12 @@ void analyze_hand(Hand const &hand) {
     }
 
     Hand deck{ make_deck(hand) };
+    assert(deck.size() == 46);
+
     Tally mine_tally;           // scores when the crib is mine
     Tally theirs_tally;         // scores then the crib is theirs
     int num_hands = 0;
-    for_each_choice(deck, 3, // C(46,3)=15180
-    [&keep, &discard, &mine_tally, &theirs_tally, &num_hands](Hand const& chosen)
+    for_each_choice(deck, 3, [&](Hand const& chosen)
     {
       auto& cut = chosen.card(2);
 
@@ -587,8 +594,11 @@ void analyze_hand(Hand const &hand) {
   cout << '\n';
 }
 
-void analyze_hand(char const* hand) {
-  analyze_hand(make_hand(hand));
+void analyze_hand(std::string_view str) {
+  auto hand = make_hand(str);
+  if (hand.size() != 6)
+    throw std::runtime_error("Expected six cards '" + std::string(str) + '\'');
+  analyze_hand(hand);
 }
 
 } // namespace
