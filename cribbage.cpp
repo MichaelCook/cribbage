@@ -322,6 +322,11 @@ constexpr int score_15s(Hand hand, Card cut) {
   return 2 * num_15s;
 }
 
+static_assert(4 == score_15s(make_hand("AH 2H 3H JH"), make_card("QH")));
+static_assert(8 == score_15s(make_hand("5H 2H 3H JH"), make_card("QH")));
+static_assert(16 == score_15s(make_hand("5H 5S 5C 5D"), make_card("TH")));
+static_assert(8 == score_15s(make_hand("6C 6D 4D 4S"), make_card("5D")));
+
 constexpr int score_pairs(Hand hand, Card cut) {
   assert(hand.size() == 4);
   auto a = hand.take().rank();
@@ -357,6 +362,10 @@ constexpr int score_pairs(Hand hand, Card cut) {
 
   return 2 * num_pairs;
 }
+
+static_assert(12 == score_pairs(make_hand("5H 5S 5C 5D"), make_card("TH")));
+static_assert(8 == score_pairs(make_hand("TS 5S 5C 5D"), make_card("TH")));
+static_assert(4 == score_pairs(make_hand("6C 6D 4D 4S"), make_card("5D")));
 
 constexpr int score_runs(Hand hand, Card cut) {
   assert(hand.size() == 4);
@@ -414,6 +423,29 @@ constexpr int score_runs(Hand hand, Card cut) {
   return 0;
 }
 
+static_assert(9 == score_runs(make_hand("AH 2H 3H 3D"), make_card("3C")));
+static_assert(9 == score_runs(make_hand("KH KD KC JH"), make_card("QH")));  // same pattern A2333
+static_assert(9 == score_runs(make_hand("AH 2H 2D 2C"), make_card("3H")));
+static_assert(9 == score_runs(make_hand("AH AD AC 2H"), make_card("3H")));
+static_assert(8 == score_runs(make_hand("AH 2H 3H 4H"), make_card("4D")));
+static_assert(8 == score_runs(make_hand("AH 2H 3H 3D"), make_card("4H")));
+static_assert(8 == score_runs(make_hand("AH 2H 2C 3H"), make_card("4H")));
+static_assert(8 == score_runs(make_hand("AS AH 2H 3H"), make_card("4H")));
+static_assert(6 == score_runs(make_hand("JH AH 2H 3D"), make_card("3H")));
+static_assert(6 == score_runs(make_hand("JH AH 2S 2H"), make_card("3H")));
+static_assert(6 == score_runs(make_hand("JH AH AS 2H"), make_card("3H")));
+static_assert(6 == score_runs(make_hand("AH 2H 3S 3H"), make_card("JH")));
+static_assert(6 == score_runs(make_hand("AH 2H 2S 3H"), make_card("JH")));
+static_assert(6 == score_runs(make_hand("AH AS 2H 3H"), make_card("JH")));
+static_assert(5 == score_runs(make_hand("AH 2H 3H 4H"), make_card("5H")));
+static_assert(4 == score_runs(make_hand("JH AH 2H 3H"), make_card("4H")));
+static_assert(4 == score_runs(make_hand("AH 2H 3H 4H"), make_card("JH")));
+static_assert(3 == score_runs(make_hand("JH QH AH 2H"), make_card("3H")));
+static_assert(3 == score_runs(make_hand("JH AH 2H 3H"), make_card("TH")));
+static_assert(3 == score_runs(make_hand("AH 2H 3H JH"), make_card("TH")));
+static_assert(0 == score_runs(make_hand("AH 8H 3H JH"), make_card("TH")));
+static_assert(12 == score_runs(make_hand("6C 6D 4D 4S"), make_card("5D")));
+
 constexpr int score_flush(Hand hand, Card cut, bool is_crib) {
   assert(hand.size() == 4);
   auto a = hand.take().suit();
@@ -440,6 +472,11 @@ constexpr int score_flush(Hand hand, Card cut, bool is_crib) {
   return 4;
 }
 
+static_assert(5 == score_flush(make_hand("5H 6H 7H 8H"), make_card("9H"), false));
+static_assert(4 == score_flush(make_hand("5H 6H 7H 8H"), make_card("9D"), false));
+static_assert(0 == score_flush(make_hand("5H 6H 7H 8H"), make_card("9D"), true));
+static_assert(0 == score_flush(make_hand("5H 6H 7H 8D"), make_card("9D"), false));
+
 constexpr int score_nobs(Hand hand, Card cut) noexcept {
   assert(hand.size() == 4);
   auto const suit = cut.suit();
@@ -464,6 +501,9 @@ constexpr int score_nobs(Hand hand, Card cut) noexcept {
 
   return 0;
 }
+
+static_assert(1 == score_nobs(make_hand("JH 2C 3C 4C"), make_card("5H")));
+static_assert(0 == score_nobs(make_hand("JH 2C 3C 4C"), make_card("5C")));
 
 constexpr int score_hand(Hand hand, Card cut, bool is_crib) {
   return score_15s(hand, cut) +
