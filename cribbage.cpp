@@ -16,9 +16,9 @@
 #include <stdexcept>
 #include <utility>
 #include <cstring>
-#include <compare>
 #include <string_view>
 #include <type_traits>
+#include <bitset>
 
 #if 0 // 1 to facilitate constexpr/static_assert debugging
 #  define constexpr
@@ -32,146 +32,182 @@ namespace {
 using std::cout;
 using std::endl;
 
-using Rank = int; // 'A', '2', '3', ..., 'J', 'Q', 'K'
-using Suit = int; // 'S', 'D', 'C', 'H'
+constexpr char suit_chars[] = "SDCH";
+constexpr char rank_chars[] = "A23456789TJQK";
 
-struct [[nodiscard]] Card {
-  Rank rank = 0;
-  Suit suit = 0;
+using Suit = unsigned; // 0='S', 1='D', 2='C', 3='H'
+using Rank = unsigned; // 0='A', 1='2', ... 12='K'
 
-  constexpr Card() noexcept = default;
-
-  constexpr Card(Rank r, Suit s) noexcept : rank{r}, suit{s} {}
-
-  constexpr auto operator<=>(Card const&) const noexcept = default;
-};
-
-struct [[nodiscard]] Hand {
-  size_t num_cards = 0;
-  static constexpr size_t max_cards = 52;
-  Card cards[max_cards];
-
-  constexpr size_t size() const noexcept { return num_cards; }
-
-  constexpr Card const &card(size_t i) const {
-    if (i >= num_cards)
-      throw std::runtime_error("No card " + std::to_string(i));
-    return cards[i];
-  }
-
-  constexpr int value(size_t i) const {
-    auto r = card(i).rank;
-    switch (r) {
-    case 'A':
-      return 1;
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-      return r - '0';
-    case 'T':
-    case 'J':
-    case 'Q':
-    case 'K':
-      return 10;
-    default:
-      throw std::runtime_error("Invalid rank");
-    }
-  }
-
-  constexpr int order(size_t i) const {
-    auto r = card(i).rank;
-    switch (r) {
-    case 'A':
-      return 1;
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-      return r - '0';
-    case 'T':
-      return 10;
-    case 'J':
-      return 11;
-    case 'Q':
-      return 12;
-    case 'K':
-      return 13;
-    default:
-      throw std::runtime_error("Invalid rank");
-    }
-  }
-
-  constexpr void push(Card const &card) {
-    if (num_cards == max_cards)
-      throw std::runtime_error("Too many cards in hand");
-    cards[num_cards] = card;
-    ++num_cards;
-  }
-
-  constexpr void pop() {
-    if (num_cards == 0)
-      throw std::runtime_error("Empty hand");
-    --num_cards;
-  }
-
-  constexpr bool has(Card const &card) const noexcept {
-    for (size_t i = 0; i != num_cards; ++i)
-      if (card == cards[i])
-        return true;
-    return false;
-  }
-};
-
-void sort(Hand& hand)
+constexpr size_t bit_count(uint64_t v) noexcept
 {
-    std::sort(hand.cards, hand.cards + hand.num_cards);
+  if constexpr(false)
+    // std::bitset count is not constexpr
+    return std::bitset<64>(v).count();
+
+  size_t n = 0;
+  while (v) {
+    v &= v - 1; // clear right-most 1-bit
+    ++n;
+  }
+  return n;
 }
 
-std::ostream &operator<<(std::ostream &os, Card const &card) {
-  if (card.rank == 0)
-    os << '-';
-  else
-    os << char(card.rank);
-  if (card.suit == 0)
-    os << '-';
-  else
-    os << char(card.suit);
+class Hand;
+
+class [[nodiscard]] Card {
+  uint64_t card_ = 0; // a single 1-bit, or 0 if no card
+
+  friend class Hand;
+
+  constexpr explicit Card(uint64_t card) noexcept
+  : card_(card)
+  {
+    assert(bit_count(card_) <= 1);
+  }
+
+public:
+
+  constexpr Card() noexcept {};
+
+  constexpr explicit operator bool () const noexcept {
+    return card_ != 0;
+  }
+
+  constexpr Card(Rank r, Suit s) noexcept
+  : card_{uint64_t(1) << (s * 16 + r)}
+  {
+    assert(s < 4);
+    assert(r < 13);
+    assert(bit_count(card_) == 1);
+  }
+
+  constexpr Rank rank() const noexcept {
+    assert(bit_count(card_) == 1);
+    uint64_t n = bit_count(card_ - 1);
+    return n % 16;
+  }
+
+  constexpr Suit suit() const noexcept {
+    assert(bit_count(card_) == 1);
+    uint64_t n = bit_count(card_ - 1);
+    return n / 16;
+  }
+
+  constexpr int value() const noexcept {
+    return std::min(rank() + 1, 10u); // 1..10
+  }
+
+};
+
+constexpr Rank rank_from_char(char c) noexcept {
+  // std::strchr is not constexpr
+  for (const char* p = rank_chars;; ++p) {
+    if (*p == c)
+      return p - rank_chars;
+    assert(*p != '\0');
+  }
+}
+
+constexpr Suit suit_from_char(char c) noexcept {
+  // std::strchr is not constexpr
+  for (const char* p = suit_chars;; ++p) {
+    if (*p == c)
+      return p - suit_chars;
+    assert(*p != '\0');
+  }
+}
+
+constexpr Card make_card(char rank, char suit)
+{
+  return Card{rank_from_char(rank), suit_from_char(suit)};
+}
+
+constexpr Card make_card(std::string_view str)
+{
+  assert(str.length() == 2);
+  return make_card(str[0], str[1]);
+}
+
+std::ostream &operator<<(std::ostream &os, Card card) {
+  assert(card.rank() < sizeof(rank_chars) - 1);
+  assert(card.suit() < sizeof(suit_chars) - 1);
+  return os << rank_chars[card.rank()]
+            << suit_chars[card.suit()];
+}
+
+class [[nodiscard]] Hand {
+  uint64_t cards_ = 0;
+
+public:
+
+  constexpr Hand() noexcept {}
+
+  constexpr explicit Hand(uint64_t cards) noexcept
+  : cards_{cards}
+  {}
+
+  constexpr size_t size() const noexcept {
+    return bit_count(cards_);
+  }
+
+  constexpr bool has(Card card) const noexcept {
+    return (cards_ & card.card_) != 0;
+  }
+
+  constexpr void insert(Card card) noexcept {
+    assert(!has(card));
+    cards_ |= card.card_;
+  }
+
+  constexpr void remove(Card card) noexcept {
+    assert(has(card));
+    cards_ &= ~card.card_;
+  }
+
+  constexpr void remove(Hand other) noexcept {
+    assert((cards_ & other.cards_) == other.cards_);
+    cards_ &= ~other.cards_;
+  }
+
+  // Remove one card from the hand.
+  // Return a false card if this hand is empty
+  constexpr Card take() noexcept {
+    uint64_t before = cards_;
+    cards_ &= cards_ - 1; // clear right-most 1-bit
+    return Card{cards_ ^ before};
+  }
+};
+
+// Each of the 52 cards is represented by a 1-bit in a uint64_t.
+// Each rank within a suit is a 1-bit in a uint16_t.
+// 0x1fff is 13 bits representing all cards in a suit.
+constexpr Hand all_cards{0x1fff'1fff'1fff'1fff};
+static_assert(all_cards.size() == 52);
+
+std::ostream &operator<<(std::ostream &os, Hand hand) {
+  bool sep = false;
+  while (auto card = hand.take()) {
+    if (sep)
+      os << ' ';
+    os << card;
+    sep = true;
+  }
   return os;
 }
 
-std::ostream &operator<<(std::ostream &os, Hand const &hand) {
-  if (hand.num_cards != 0) {
-    os << hand.cards[0];
-    for (size_t i = 1; i != hand.num_cards; ++i)
-      os << ' ' << hand.cards[i];
-  }
-  return os;
-}
-
-constexpr char to_upper(char c) // std::toupper is not constexpr
-{
+constexpr char to_upper(char c) noexcept { // std::toupper is not constexpr
     if (c >= 'a' && c <= 'z')
         return c - 'a' + 'A';
     return c;
 }
 
-constexpr bool is_space(char c) // std::isspace is not constexpr
-{
+constexpr bool is_space(char c) noexcept { // std::isspace is not constexpr
     return c == ' ';
 }
 
 constexpr Hand make_hand(std::string_view str) {
   Hand h;
-  Rank rank = 0;
+  char rank_char = 0;
   for (auto c : str) {
     c = to_upper(c);
     switch (c) {
@@ -179,10 +215,10 @@ constexpr Hand make_hand(std::string_view str) {
     case 'C':
     case 'S':
     case 'D':
-      if (rank == 0)
+      if (rank_char == 0)
         throw std::runtime_error("Malformed hand '" + std::string(str) + '\'');
-      h.push(Card(rank, c));
-      rank = 0;
+      h.insert(make_card(rank_char, c));
+      rank_char = 0;
       break;
     case 'A':
     case '2':
@@ -197,9 +233,9 @@ constexpr Hand make_hand(std::string_view str) {
     case 'J':
     case 'Q':
     case 'K':
-      if (rank != 0)
+      if (rank_char != 0)
         throw std::runtime_error("Malformed hand '" + std::string(str) + '\'');
-      rank = c;
+      rank_char = c;
       break;
     case '-':
       break;
@@ -209,17 +245,18 @@ constexpr Hand make_hand(std::string_view str) {
       throw std::runtime_error("Malformed hand '" + std::string(str) + '\'');
     }
   }
-  if (rank != 0)
+  if (rank_char != 0)
       throw std::runtime_error("Malformed hand '" + std::string(str));
   return h;
 }
 
-constexpr int score_15s(Hand const &hand) {
-  auto a = hand.value(0);
-  auto b = hand.value(1);
-  auto c = hand.value(2);
-  auto d = hand.value(3);
-  auto e = hand.value(4);
+constexpr int score_15s(Hand hand, Card cut) {
+  assert(hand.size() == 4);
+  auto a = hand.take().value();
+  auto b = hand.take().value();
+  auto c = hand.take().value();
+  auto d = hand.take().value();
+  auto e = cut.value();
   int num_15s = 0;
 
   // five cards - C(5,5)=1
@@ -285,50 +322,60 @@ constexpr int score_15s(Hand const &hand) {
   return 2 * num_15s;
 }
 
-constexpr int score_pairs(Hand const &hand) {
-  size_t n = hand.size();
+constexpr int score_pairs(Hand hand, Card cut) {
+  assert(hand.size() == 4);
+  auto a = hand.take().rank();
+  auto b = hand.take().rank();
+  auto c = hand.take().rank();
+  auto d = hand.take().rank();
+  auto e = cut.rank();
   int num_pairs = 0;
-  for (size_t i = 0; i < n - 1; ++i) {
-    auto &card = hand.card(i);
-    for (size_t j = i; ++j < n;) {
-      if (card.rank == hand.card(j).rank)
-        ++num_pairs;
-    }
-  }
+
+  if (a == b)
+    ++num_pairs;
+  if (a == c)
+    ++num_pairs;
+  if (a == d)
+    ++num_pairs;
+  if (a == e)
+    ++num_pairs;
+
+  if (b == c)
+    ++num_pairs;
+  if (b == d)
+    ++num_pairs;
+  if (b == e)
+    ++num_pairs;
+
+  if (c == d)
+    ++num_pairs;
+  if (c == e)
+    ++num_pairs;
+
+  if (d == e)
+    ++num_pairs;
 
   return 2 * num_pairs;
 }
 
-constexpr int score_runs(Hand const &hand) {
-  if (hand.size() != 5)
-    throw std::runtime_error("Wrong number of cards in hand");
+constexpr int score_runs(Hand hand, Card cut) {
+  assert(hand.size() == 4);
 
-  // Make a sorted copy of the hand, but use only the order
-  // of each rank, ignore the suit.
-  int orders[5];
-  for (size_t i = 0; i < 5; ++i) {
-    auto order = hand.order(i);
-    for (size_t j = 0;; ++j) {
-      if (j == i) {
-        // insert at end
-        orders[i] = order;
-        break;
-      }
-      if (order < orders[j]) {
-        // insert before [j]
-        do
-          std::swap(order, orders[j]);
-        while (++j < i);
-        orders[j] = order;
-        break;
-      }
-    }
-  }
+  // Make a sorted copy of the hand, but use only the rank
+  // of each card, ignore the suit.
+  Rank ranks[] = {
+    hand.take().rank(),
+    hand.take().rank(),
+    hand.take().rank(),
+    hand.take().rank(),
+    cut.rank(),
+  };
+  std::sort(std::begin(ranks), std::end(ranks));
 
-  constexpr int X = -1; // match any rank
+  constexpr unsigned X = 99; // match any rank
   constexpr struct {
     int score;
-    int delta[4];
+    unsigned delta[4];
   } const patterns[] = {
     { 12, { 0, 1, 1, 0 } }, // AA233
     {  9, { 1, 1, 0, 0 } }, // A2333
@@ -352,127 +399,132 @@ constexpr int score_runs(Hand const &hand) {
     {  3, { 1, 1, X, X } }, // A23xx
   };
   for (auto& pattern : patterns) {
-    auto previous = orders[0];
+    auto previous = ranks[0];
     for (size_t j = 0;; ++j) {
       if (j == 4)
         return pattern.score;
       auto delta = pattern.delta[j];
-      auto order = orders[j + 1];
-      if (delta != X && delta != order - previous)
+      auto rank = ranks[j + 1];
+      if (delta != X && delta != rank - previous)
         break;
-      previous = order;
+      previous = rank;
     }
   }
 
   return 0;
 }
 
-constexpr int score_flush(Hand const &hand, bool is_crib) {
-  size_t n = hand.size();
-  if (n != 5)
-    throw std::runtime_error("Wrong number of cards in hand");
-  auto suit = hand.card(0).suit;
-  for (size_t i = 1; i < 4; ++i)
-    if (suit != hand.card(i).suit)
-      return 0;
-  // first 4 are same suit
-  if (suit == hand.card(4).suit)
+constexpr int score_flush(Hand hand, Card cut, bool is_crib) {
+  assert(hand.size() == 4);
+  auto a = hand.take().suit();
+  auto b = hand.take().suit();
+  auto c = hand.take().suit();
+  auto d = hand.take().suit();
+  auto e = cut.suit();
+
+  if (a != b)
+    return 0;
+  if (a != c)
+    return 0;
+  if (a != d)
+    return 0;
+
+  // All 4 cards in `hand` are the same suit
+
+  if (a == e)
     return 5;
+
   // In the crib, a flush counts only if all five cards are the same suit.
   if (is_crib)
     return 0;
   return 4;
 }
 
-constexpr int score_right_jack(Hand const &hand) {
-  size_t n = hand.size();
-  if (n == 0)
-    throw std::runtime_error("Empty hand");
-  --n;
-  auto cut_suit = hand.card(n).suit;
-  for (size_t i = 0; i < n; ++i) {
-    auto &card = hand.card(i);
-    if (card.rank == 'J' && card.suit == cut_suit)
-      return 1;
-  }
+constexpr int score_nobs(Hand hand, Card cut) noexcept {
+  assert(hand.size() == 4);
+  auto const suit = cut.suit();
+
+  constexpr auto jack = 10;
+
+  auto a = hand.take();
+  if (a.rank() == jack && a.suit() == suit)
+    return 1;
+
+  auto b = hand.take();
+  if (b.rank() == jack && b.suit() == suit)
+    return 1;
+
+  auto c = hand.take();
+  if (c.rank() == jack && c.suit() == suit)
+    return 1;
+
+  auto d = hand.take();
+  if (d.rank() == jack && d.suit() == suit)
+    return 1;
+
   return 0;
 }
 
-constexpr int score_hand(Hand const &hand, bool is_crib) {
-  return score_15s(hand) +
-         score_pairs(hand) +
-         score_runs(hand) +
-         score_flush(hand, is_crib) +
-         score_right_jack(hand);
+constexpr int score_hand(Hand hand, Card cut, bool is_crib) {
+  return score_15s(hand, cut) +
+         score_pairs(hand, cut) +
+         score_runs(hand, cut) +
+         score_flush(hand, cut, is_crib) +
+         score_nobs(hand, cut);
 }
 
-constexpr int score_hand(std::string_view hand, bool is_crib) {
-  return score_hand(make_hand(hand), is_crib);
+[[maybe_unused]]
+constexpr int score_hand(std::string_view hand, std::string_view cut, bool is_crib) {
+  return score_hand(make_hand(hand), make_card(cut), is_crib);
 }
 
-static_assert(score_hand("AH AS JH AC AD", false) == 12); // 4oak
-static_assert(score_hand("AH AS JH AC AH", false) == 13); // ...plus right jack
-static_assert(score_hand("AH 3H 7H TH JH", false) == 5);  // 5 hearts
-static_assert(score_hand("AH 3H 7H TH JH", true) == 5);   // 5 hearts but crib
-static_assert(score_hand("AH 3H 7H TH JS", false) == 4);  // 4 hearts
-static_assert(score_hand("AH 3H 7S TH JH", false) == 0);  // 4 hearts but with cut
-static_assert(score_hand("AH 3H 7H TH JS", true) == 0);   // 4 hearts but crib
-static_assert(score_hand("AH 2S 3C 5D JH", false) == 4 + 3); // 15/4 + run/3
-static_assert(score_hand("7H 7S 7C 8D 8H", false) == 12 + 6 + 2); // 15/12 + 3oak + 2oak
-static_assert(score_hand("AH 2H 3H 3S 3D", false) == 15); // triple run/3
-static_assert(score_hand("3H AH 3S 2H 3D", false) == 15); // triple run/3
-static_assert(score_hand("5H 5C 5S JD 5D", false) == 29);
-static_assert(score_hand("5H 5C 5S 5D JD", false) == 28);
-static_assert(score_hand("6C 4D 6D 4S 5D", false) == 24);
+static_assert(score_hand("AH AS JH AC", "AD", false) == 12); // 4oak
+static_assert(score_hand("AH AS JD AC", "AD", false) == 13); // ...plus right jack
+static_assert(score_hand("AH 3H 7H TH", "JH", false) == 5);  // 5 hearts
+static_assert(score_hand("AH 3H 7H TH", "JH", true) == 5);   // 5 hearts but crib
+static_assert(score_hand("AH 3H 7H TH", "JS", false) == 4);  // 4 hearts
+static_assert(score_hand("AH 3H 7S TH", "JH", false) == 0);  // 4 hearts but with cut
+static_assert(score_hand("AH 3H 7H TH", "JS", true) == 0);   // 4 hearts but crib
+static_assert(score_hand("AH 2S 3C 5D", "JH", false) == 4 + 3); // 15/4 + run/3
+static_assert(score_hand("7H 7S 7C 8D", "8H", false) == 12 + 6 + 2); // 15/12 + 3oak + 2oak
+static_assert(score_hand("AH 2H 3H 3S", "3D", false) == 15); // triple run/3
+static_assert(score_hand("3H AH 3S 2H", "3D", false) == 15); // triple run/3
+static_assert(score_hand("5H 5C 5S JD", "5D", false) == 29);
+static_assert(score_hand("5H 5C 5S 5D", "JD", false) == 28);
+static_assert(score_hand("6C 4D 6D 4S", "5D", false) == 24);
 
 // ---------------------------------------------------------------------------
 
-/* A ChoiceHandler is a type like `void f(Hand const& choice)`.  That is, a
-   function (or function-like object) that takes one argument, a `Hand const&`
+/* A ChoiceHandler is a type like `void f(Hand choice)`.  That is, a
+   function (or function-like object) that takes one argument, a `Hand`
    object, and the returned value (if any) is ignored */
 template<typename T>
-concept ChoiceHandler = std::invocable<T, Hand const&>;
+concept ChoiceHandler = std::invocable<T, Hand>;
 
 template <ChoiceHandler T>
 constexpr
-void for_each_choice_internal(Hand const &hand, size_t offset, size_t num_choose,
-                              Hand &chosen, T const &func) {
+void for_each_choice_internal(Hand hand, size_t num_choose, Hand chosen, T const &func) {
   if (chosen.size() == num_choose) {
     func(chosen);
     return;
   }
-  while (offset != hand.size()) {
-    chosen.push(hand.cards[offset]);
-    ++offset;
-    for_each_choice_internal(hand, offset, num_choose, chosen, func);
-    chosen.pop();
+  while (auto card = hand.take()) {
+    chosen.insert(card);
+    for_each_choice_internal(hand, num_choose, chosen, func);
+    chosen.remove(card);
   }
 }
 
 template <ChoiceHandler T>
 constexpr
-void for_each_choice(Hand const &hand, size_t num_choose, T const &func) {
-  Hand discard;
-  for_each_choice_internal(hand, 0u, num_choose, discard, func);
-}
-
-constexpr Hand make_deck(Hand const &exclude) {
-  Hand deck;
-  for (auto suit : { 'H', 'C', 'D', 'S' }) {
-    for (auto rank : { 'A', '2', '3', '4', '5', '6', '7',
-                       '8', '9', 'T', 'J', 'Q', 'K' }) {
-      Card card(rank, suit);
-      if (!exclude.has(card))
-        deck.push(card);
-    }
-  }
-  return deck;
+void for_each_choice(Hand hand, size_t num_choose, T const &func) {
+  for_each_choice_internal(hand, num_choose, Hand{}, func);
 }
 
 struct [[nodiscard]] Tally {
-  static constexpr const int max_score = 29 + 24; // 29 in hand, 24 in crib (44665)
-  static constexpr const int min_score = -29;     // 0 in hand, 29 in opp crib
-  static constexpr const size_t size = max_score - min_score + 1;
+  static constexpr int max_score = 29 + 24; // 29 in hand, 24 in crib (44665)
+  static constexpr int min_score = -29;     // 0 in hand, 29 in opp crib
+  static constexpr size_t size = max_score - min_score + 1;
   int scores[size];
   void increment(int score)
   {
@@ -536,7 +588,7 @@ constexpr Statistics::Statistics(Tally const &t, int num_hands) {
   stdev = sqrt(sumdev / num_hands);
 }
 
-void analyze_hand(Hand const &hand) {
+void analyze_hand(Hand hand) {
   /*
     Find all possible pairs of cards to discard to the crib.
     There are C(6,2)=15 possible discards in a cribbage hand.
@@ -544,45 +596,46 @@ void analyze_hand(Hand const &hand) {
   cout << "[ " << hand << " ]\n";
   assert(hand.size() == 6);
 
-  for_each_choice(hand, 2, [&](Hand const &discard) {
-    Hand keep;
-    for (size_t i = 0; i != hand.size(); ++i) {
-      auto &card = hand.card(i);
-      if (!discard.has(card))
-        keep.push(card);
-    }
+  for_each_choice(hand, 2, [&hand](Hand discard) {
+    Hand hold{hand};
+    hold.remove(discard);
 
-    Hand deck{ make_deck(hand) };
+    Hand deck{all_cards};
+    deck.remove(hand);
     assert(deck.size() == 46);
 
     Tally mine_tally;           // scores when the crib is mine
     Tally theirs_tally;         // scores then the crib is theirs
     int num_hands = 0;
-    for_each_choice(deck, 3, [&](Hand const& chosen)
-    {
-      auto& cut = chosen.card(2);
+    for_each_choice(deck, 2, [&](Hand chosen) {
+      auto remaining_deck{deck};
+      remaining_deck.remove(chosen);
+      assert(remaining_deck.size() == 44);
 
-      Hand hold(keep);
-      hold.push(cut);
+      auto card1 = chosen.take();
+      auto card2 = chosen.take();
 
-      Hand crib(discard);
-      crib.push(chosen.card(0));
-      crib.push(chosen.card(1));
-      crib.push(cut);
+      Hand crib{discard};
+      crib.insert(card1);
+      crib.insert(card2);
+      assert(crib.size() == 4);
 
-      auto hold_score = score_hand(hold, false);
-      auto crib_score = score_hand(crib, true);
+      while (auto cut = remaining_deck.take()) {
+        auto hold_score = score_hand(hold, cut, false);
+        auto crib_score = score_hand(crib, cut, true);
 
-      auto mine_score = hold_score + crib_score;
-      auto theirs_score = hold_score - crib_score;
+        auto mine_score = hold_score + crib_score;
+        auto theirs_score = hold_score - crib_score;
 
-      ++num_hands;
+        ++num_hands;
 
-      mine_tally.increment(mine_score);
-      theirs_tally.increment(theirs_score);
+        mine_tally.increment(mine_score);
+        theirs_tally.increment(theirs_score);
+      }
     });
-
-    assert(num_hands == 15180); // sanity check, expecting C(46,3)
+    // deck size: 46, C(46,2)=1035
+    // remaining_deck size: 44
+    assert(num_hands == 1035 * 44);
 
     /* Calculate statistics (mean, standard deviation, min and max)
        for both situations when it's my crib and when it's theirs. */
@@ -607,6 +660,20 @@ int main(int, char **argv)
 try {
 
 #ifndef NDEBUG
+  {
+    auto as = make_card('A', 'S');
+    assert(as.rank() == 0);
+    assert(as.suit() == 0);
+
+    auto kc = make_card('K', 'C');
+    assert(kc.rank() == 12);
+    assert(kc.suit() == 2);
+
+    auto jh = make_card('J', 'H');
+    assert(jh.rank() == 10);
+    assert(jh.suit() == 3);
+  }
+
   // unit test for Statistics
   {
     Tally t{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -629,17 +696,18 @@ try {
 
   // with 29 in your hand, what's the most you could have in the crib?
   if ((false)) {
-    const auto hand{ make_hand("5H 5C 5S JD 5D") }; // 29 hand
-    const auto cut{ hand.cards[4] };
-    const auto deck{ make_deck(hand) };
+    const auto hand = make_hand("5H 5C 5S JD"); // 29 hand
+    const auto cut = make_card("5D");
+    assert(score_hand(hand, cut, false) == 29);
+    Hand deck{all_cards};
+    deck.remove(hand);
+    deck.remove(cut);
     int best = 0;
     for_each_choice(deck, 4, [&](Hand crib) {
-      crib.push(cut);
-      auto score = score_hand(crib, true);
+      auto score = score_hand(crib, cut, true);
       if (best <= score) {
-        sort(crib);
         best = score;
-        cout << score << ' ' << crib << '\n';
+        cout << crib << " = " << score << '\n';
       }
     });
   }
