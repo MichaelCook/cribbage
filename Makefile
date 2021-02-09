@@ -45,19 +45,19 @@ TIMING = time --output=$(TIMINGLOG) --append \
 
 ifdef TIMING
   HAND = \
-    5H-5C-5S-JD-4C-4D \
-    AH-AS-JH-AC-AD-TH \
-    AH-AS-JD-AC-AD-9H \
-    AH-3H-7H-TH-JH-9H \
-    AH-3H-7H-TH-JH-9H \
-    AH-3H-7H-TH-JS-9H \
-    AH-3H-7S-TH-JH-9H \
-    AH-3H-7H-TH-JS-9H \
-    AH-2S-3C-5D-JH-9H \
-    7H-7S-7C-8D-8H-9H \
+    5S-4D-JD-4C-5C-5H \
+    AS-AD-AC-AH-TH-JH \
+    AS-AD-JD-AC-AH-9H \
+    AH-3H-7H-9H-TH-JH \
+    AH-3H-7H-9H-TH-JH \
+    JS-AH-3H-7H-9H-TH \
+    7S-AH-3H-9H-TH-JH \
+    JS-AH-3H-7H-9H-TH \
+    2S-5D-3C-AH-9H-JH \
+    7S-8D-7C-7H-8H-9H \
 
 else
-  HAND = 5H-5C-5S-JD-4C-4D
+  HAND = 5S-4D-JD-4C-5C-5H
 endif
 
 .PHONY: all
