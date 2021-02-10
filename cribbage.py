@@ -389,11 +389,11 @@ class Tally:
 
 class Statistics:
 
-    def __init__(self, mean, stdev, min, max):
+    def __init__(self, mean, stdev, mins, maxs):
         self.mean = mean
         self.stdev = stdev
-        self.min = min
-        self.max = max
+        self.min = mins
+        self.max = maxs
 
     def __str__(self):
         return f'{self.mean:.1f} {self.stdev:.1f} {self.min}..{self.max}'
@@ -401,30 +401,30 @@ class Statistics:
 def make_statistics(tally, num_hands):
     # Convert `tally` to a Statistics object.  `tally` is the number of times
     # each score min_score..max_score was achieved over `num_hands` hands.
-    min = 0
+    mins = 0
     for score in range(min_score, max_score + 1):
         if tally.scores[score - min_score] != 0:
-            min = score
+            mins = score
             break
 
-    max = 0
+    maxs = 0
     for score in range(max_score, min_score - 1, -1):
         if tally.scores[score - min_score] != 0:
-            max = score
+            maxs = score
             break
 
-    sum = 0.0
-    for score in range(min, max + 1):
-        sum += score * tally.scores[score - min_score]
-    mean = sum / num_hands
+    sums = 0.0
+    for score in range(mins, maxs + 1):
+        sums += score * tally.scores[score - min_score]
+    mean = sums / num_hands
 
     sumdev = 0.0
-    for score in range(min, max + 1):
+    for score in range(mins, maxs + 1):
         d = score - mean
         sumdev += d * d
     stdev = math.sqrt(sumdev / float(num_hands))
 
-    return Statistics(mean, stdev, min, max)
+    return Statistics(mean, stdev, mins, maxs)
 
 def analyze_hand(hand):
     # Find all possible pairs of cards to discard to the crib.
@@ -483,11 +483,14 @@ def analyze_hand(hand):
 
 # ---------------------------------------------------------------------------
 
-for arg in sys.argv[1:]:
-    hand = make_hand(arg)
-    if hand.size() != 6:
-        raise Exception(f'Wrong number of cards in hand: {hand}')
+def main():
+    for arg in sys.argv[1:]:
+        hand = make_hand(arg)
+        if hand.size() != 6:
+            raise Exception(f'Wrong number of cards in hand: {hand}')
 
-    print(f'[ {hand} ]')
-    analyze_hand(hand)
-    print()
+        print(f'[ {hand} ]')
+        analyze_hand(hand)
+        print()
+
+main()
