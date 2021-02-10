@@ -598,10 +598,10 @@ function analyze_hand(hand: Hand): void {
       There are C(6,2)=15 possible discards in a cribbage hand.
      */
     for (const discard of choose(hand, 2)) {
-        let keep = new Hand();
+        let hold = new Hand();
         for (const card of hand.cards) {
             if (!discard.has(card)) {
-                keep.push(card);
+                hold.push(card);
             }
         }
 
@@ -611,28 +611,38 @@ function analyze_hand(hand: Hand): void {
         let theirs_tally = new Tally();  // scores then the crib is theirs
         let num_hands = 0;
 
-        for (const chosen of choose(deck, 3)) {
-            num_hands++;
-            const cut = chosen.cards[2];
-
-            let hold = keep.clone();
-            hold.push(cut);
+        for (const chosen of choose(deck, 2)) {
+            const card1 = chosen.cards[0];
+            const card2 = chosen.cards[1];
 
             let crib = discard.clone();
-            crib.push(chosen.cards[0]);
-            crib.push(chosen.cards[1]);
-            crib.push(cut);
+            crib.push(card1);
+            crib.push(card2);
 
-            const hold_score = score_hand(hold, false);
-            const crib_score = score_hand(crib, true);
+            for (const cut of deck.cards) {
+                if (cut == card1 || cut == card2)
+                    continue;
 
-            const mine_score = hold_score + crib_score;
-            const theirs_score = hold_score - crib_score;
+                hold.push(cut);
+                const hold_score = score_hand(hold, false);
+                hold.pop();
 
-            mine_tally.increment(mine_score);
-            theirs_tally.increment(theirs_score);
+                crib.push(cut);
+                const crib_score = score_hand(crib, true);
+                crib.pop();
+
+                const mine_score = hold_score + crib_score;
+                const theirs_score = hold_score - crib_score;
+
+                num_hands++;
+
+                mine_tally.increment(mine_score);
+                theirs_tally.increment(theirs_score);
+            }
         }
-        equal(num_hands, 15180);  // sanity check, expecting C(46,3)
+        // deck size: 46, C(46,2)=1035
+        // remaining_deck size: 44
+        equal(num_hands, 1035 * 44);
 
         const if_mine = Statistics.make(mine_tally, num_hands);
         const if_theirs = Statistics.make(theirs_tally, num_hands);

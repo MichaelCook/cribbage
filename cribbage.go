@@ -493,10 +493,10 @@ func analyzeHand(hand handT) {
      */
     discard := choose(hand, 2)
     for discard.more() {
-        keep := handT{}
+        hold := handT{}
         for _, card := range hand.cards() {
             if !discard.chosen.has(card) {
-                keep.push(card)
+                hold.push(card)
             }
         }
 
@@ -506,29 +506,40 @@ func analyzeHand(hand handT) {
         mineTally := tallyT{}    // scores when the crib is mine
         theirsTally := tallyT{}  // scores then the crib is theirs
         numHands := 0
-        dealt := choose(deck, 3)
+        dealt := choose(deck, 2)
         for dealt.more() {
-            numHands++
-            cut := dealt.chosen.slots[2]
-
-            hold := keep
-            hold.push(cut)
+            card1 := dealt.chosen.slots[0]
+            card2 := dealt.chosen.slots[1]
 
             crib := discard.chosen
-            crib.push(dealt.chosen.slots[0])
-            crib.push(dealt.chosen.slots[1])
-            crib.push(cut)
+            crib.push(card1)
+            crib.push(card2)
 
-            holdScore := scoreHand(hold, false)
-            cribScore := scoreHand(crib, true)
+            for _, cut := range deck.cards() {
+              if cut == card1 || cut == card2 {
+                continue
+              }
 
-            mineScore := holdScore + cribScore
-            theirsScore := holdScore - cribScore
+              hold.push(cut)
+              holdScore := scoreHand(hold, false)
+              hold.pop()
 
-            mineTally.increment(mineScore)
-            theirsTally.increment(theirsScore)
+              crib.push(cut)
+              cribScore := scoreHand(crib, true)
+              crib.pop()
+
+              mineScore := holdScore + cribScore
+              theirsScore := holdScore - cribScore
+
+              numHands++
+
+              mineTally.increment(mineScore)
+              theirsTally.increment(theirsScore)
+            }
         }
-        equali(numHands, 15180)  // sanity check, expecting C(46,3)
+        // deck size: 46, C(46,2)=1035
+        // remaining_deck size: 44
+        equali(numHands, 1035 * 44);
 
         ifMine := makeStatistics(mineTally, numHands)
         ifTheirs := makeStatistics(theirsTally, numHands)

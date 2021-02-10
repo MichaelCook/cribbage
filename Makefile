@@ -75,6 +75,8 @@ cribbage-cpp: cribbage.cpp
 cribbage-nim: cribbage.nim
 	nim c --out:$@ $(NIMFLAGS) cribbage.nim
 
+export RUST_BACKTRACE=full
+
 .PHONY: cribbage-rust
 cribbage-rust:
 	cd cribbage-rust && cargo build $(CARGOFLAGS)

@@ -431,39 +431,50 @@ def analyze_hand(hand):
     # There are C(6,2)=15 possible discards in a cribbage hand.
 
     for discarding in choose(hand, 2):
-        keeping = Hand()
+        hold = Hand()
         for i in range(hand.size()):
             card = hand.cards[i]
             if not discarding.has(card):
-                keeping.push(card)
+                hold.push(card)
 
         deck = make_deck(hand)
         assert len(deck.cards) == 46
+
         mine_tally = Tally()   # scores when the crib is mine
         theirs_tally = Tally() # scores then the crib is theirs
         num_hands = 0
-        for chosen in choose(deck, 3):
-            num_hands += 1
-            cut = chosen.cards[2]
-
-            hold = keeping.copy()
-            hold.push(cut)
+        for chosen in choose(deck, 2):
+            card1 = chosen.cards[0]
+            card2 = chosen.cards[1]
 
             crib = discarding.copy()
-            crib.push(chosen.cards[0])
-            crib.push(chosen.cards[1])
-            crib.push(cut)
+            crib.push(card1)
+            crib.push(card2)
+            assert len(crib.cards) == 4
 
-            hold_score = score_hand(hold, False)
-            crib_score = score_hand(crib, True)
+            for cut in deck.cards:
+                if cut == card1 or cut == card2:
+                    continue
 
-            mine_score = hold_score + crib_score
-            theirs_score = hold_score - crib_score
+                hold.push(cut)
+                hold_score = score_hand(hold, False)
+                hold.pop()
 
-            mine_tally.count(mine_score)
-            theirs_tally.count(theirs_score)
+                crib.push(cut)
+                crib_score = score_hand(crib, True)
+                crib.pop()
 
-        assert num_hands == 15180 # sanity check, expecting C(46,3)
+                mine_score = hold_score + crib_score
+                theirs_score = hold_score - crib_score
+
+                num_hands += 1
+
+                mine_tally.count(mine_score)
+                theirs_tally.count(theirs_score)
+
+        # deck size: 46, C(46,2)=1035
+        # remaining_deck size: 44
+        assert num_hands == 1035 * 44
 
         if_mine = make_statistics(mine_tally, num_hands)
         if_theirs = make_statistics(theirs_tally, num_hands)

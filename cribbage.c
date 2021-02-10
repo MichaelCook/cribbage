@@ -571,12 +571,12 @@ static void analyze_hand(Hand const* hand)
     Hand discard;
     Choose_init(&choose_to_discard, hand, 2, &discard);
     while (Choose_next(&choose_to_discard)) {
-        Hand keep;
-        Hand_init(&keep);
+        Hand hold;
+        Hand_init(&hold);
         for (size_t i = 0; i != Hand_size(hand); ++i) {
             Card card = Hand_card(hand, i);
             if (!Hand_has(&discard, card))
-                Hand_push(&keep, card);
+                Hand_push(&hold, card);
         }
 
         Hand deck;
@@ -592,31 +592,41 @@ static void analyze_hand(Hand const* hand)
         int num_hands = 0;
         Choose choose_from_deck;
         Hand chosen;
-        Choose_init(&choose_from_deck, &deck, 3, &chosen);
+        Choose_init(&choose_from_deck, &deck, 2, &chosen);
         while (Choose_next(&choose_from_deck)) {
-            Card cut = Hand_card(&chosen, 2);
-
-            Hand hold;
-            Hand_copy(&hold, &keep);
-            Hand_push(&hold, cut);
+            Card card1 = Hand_card(&chosen, 0);
+            Card card2 = Hand_card(&chosen, 1);
 
             Hand crib;
             Hand_copy(&crib, &discard);
-            Hand_push(&crib, Hand_card(&chosen, 0));
-            Hand_push(&crib, Hand_card(&chosen, 1));
-            Hand_push(&crib, cut);
+            Hand_push(&crib, card1);
+            Hand_push(&crib, card2);
 
-            int hold_score = score_hand(&hold, false);
-            int crib_score = score_hand(&crib, true);
+            for (size_t i = 0; i != Hand_size(&deck); ++i) {
+                Card cut = Hand_card(&deck, i);
+                if (Card_equal(cut, card1) || Card_equal(cut, card2))
+                    continue;
 
-            int mine_score = hold_score + crib_score;
-            int theirs_score = hold_score - crib_score;
+                Hand_push(&hold, cut);
+                int hold_score = score_hand(&hold, false);
+                Hand_pop(&hold);
 
-            Tally_increment(&mine_tally, mine_score);
-            Tally_increment(&theirs_tally, theirs_score);
-            ++num_hands;
+                Hand_push(&crib, cut);
+                int crib_score = score_hand(&crib, true);
+                Hand_pop(&crib);
+
+                int mine_score = hold_score + crib_score;
+                int theirs_score = hold_score - crib_score;
+
+                ++num_hands;
+
+                Tally_increment(&mine_tally, mine_score);
+                Tally_increment(&theirs_tally, theirs_score);
+            }
         }
-        assert(num_hands == 15180); // sanity check, expecting C(46,3)
+        // deck size: 46, C(46,2)=1035
+        // remaining_deck size: 44
+        assert(num_hands == 1035 * 44);
 
         /* Calculate statistics (mean, standard deviation, min and max)
            for both situations when it's my crib and when it's theirs. */

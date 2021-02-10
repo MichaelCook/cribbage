@@ -182,6 +182,10 @@ impl Hand {
         assert!(!self.has(&card));
         self.cards.push(card);
     }
+
+    pub fn pop(&mut self) {
+        self.cards.pop();
+    }
 }
 
 impl fmt::Display for Hand {
@@ -499,10 +503,10 @@ fn analyze_hand(hand: &Hand) {
     for from_hand in hand.cards.iter().combinations(2) {
         let discarding = Hand::from_vec(from_hand);
 
-        let mut keeping = Hand::new();
+        let mut hold = Hand::new();
         for card in hand.cards.iter() {
             if !discarding.has(&card) {
-                keeping.push(*card);
+                hold.push(*card);
             }
         }
 
@@ -510,28 +514,39 @@ fn analyze_hand(hand: &Hand) {
         let mut mine_tally = Tally::new();    // scores when the crib is mine
         let mut theirs_tally = Tally::new();  // scores then the crib is theirs
         let mut num_hands = 0;
-        for from_deck in deck.cards.iter().combinations(3) {
-            num_hands += 1;
-            let cut = from_deck[2];
-
-            let mut hold = keeping.clone();
-            hold.push(*cut);
+        for from_deck in deck.cards.iter().combinations(2) {
+            let card1 = *from_deck[0];
+            let card2 = *from_deck[1];
 
             let mut crib = discarding.clone();
-            crib.push(*from_deck[0]);
-            crib.push(*from_deck[1]);
-            crib.push(*cut);
+            crib.push(card1);
+            crib.push(card2);
 
-            let hold_score = score_hand(&hold, false);
-            let crib_score = score_hand(&crib, true);
+            for cut in deck.cards.iter() {
+                if cut == &card1 || cut == &card2 {
+                    continue;
+                }
 
-            let mine_score = hold_score + crib_score;
-            let theirs_score = hold_score - crib_score;
+                hold.push(*cut);
+                let hold_score = score_hand(&hold, false);
+                hold.pop();
 
-            mine_tally.increment(mine_score);
-            theirs_tally.increment(theirs_score);
+                crib.push(*cut);
+                let crib_score = score_hand(&crib, true);
+                crib.pop();
+
+                let mine_score = hold_score + crib_score;
+                let theirs_score = hold_score - crib_score;
+
+                num_hands += 1;
+
+                mine_tally.increment(mine_score);
+                theirs_tally.increment(theirs_score);
+            }
         }
-        assert!(num_hands == 15180); // sanity check, expecting C(46,3)
+        // deck size: 46, C(46,2)=1035
+        // remaining_deck size: 44
+        assert!(num_hands == 1035 * 44);
 
         let if_mine = Statistics::make(mine_tally, num_hands);
         let if_theirs = Statistics::make(theirs_tally, num_hands);

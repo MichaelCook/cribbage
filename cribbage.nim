@@ -427,38 +427,48 @@ proc analyze_hand(hand: Hand) =
   # There are C(6,2)=15 possible discards in a cribbage hand.
 
   for discarding in choose(hand, 2):
-    var keeping: Hand
+    var hold: Hand
     for i in 0 ..< hand.num_cards:
       let card = hand.cards[i]
       if not discarding.has(card):
-        keeping.push(card)
+        hold.push(card)
 
     let deck = make_deck(hand)
     var mine_tally: Tally       # scores when the crib is mine
     var theirs_tally: Tally     # scores then the crib is theirs
     var num_hands = 0
-    for chosen in choose(deck, 3):
-      inc num_hands
-      let cut = chosen.cards[2]
-
-      var hold = keeping
-      hold.push(cut)
+    for chosen in choose(deck, 2):
+      let card1 = chosen.cards[0]
+      let card2 = chosen.cards[1]
 
       var crib = discarding
-      crib.push(chosen.cards[0])
-      crib.push(chosen.cards[1])
-      crib.push(cut)
+      crib.push(card1)
+      crib.push(card2)
 
-      let hold_score = score_hand(hold, false)
-      let crib_score = score_hand(crib, true)
+      for i in 0 ..< deck.num_cards:
+        let cut = deck.cards[i]
+        if cut == card1 or cut == card2:
+          continue
 
-      let mine_score = hold_score + crib_score
-      let theirs_score = hold_score - crib_score
+        hold.push(cut)
+        let hold_score = score_hand(hold, false)
+        hold.pop()
 
-      inc mine_tally.scores[mine_score - min_score]
-      inc theirs_tally.scores[theirs_score - min_score]
+        crib.push(cut)
+        let crib_score = score_hand(crib, true)
+        crib.pop()
 
-    assert num_hands == 15180 # sanity check, expecting C(46,3)
+        let mine_score = hold_score + crib_score
+        let theirs_score = hold_score - crib_score
+
+        inc num_hands
+
+        inc mine_tally.scores[mine_score - min_score]
+        inc theirs_tally.scores[theirs_score - min_score]
+
+    # deck size: 46, C(46,2)=1035
+    # remaining_deck size: 44
+    assert num_hands == 1035 * 44
 
     let
       if_mine = make_statistics(mine_tally, num_hands)
