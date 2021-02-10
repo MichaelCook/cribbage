@@ -305,7 +305,7 @@ constexpr int score_runs(Hand const &hand) {
 
   // Make a sorted copy of the hand, but use only the order
   // of each rank, ignore the suit.
-#if 0
+#if 1 // this approach is just little faster than std::sort (0.93s versus 0.98s)
   int orders[5];
   for (size_t i = 0; i < 5; ++i) {
     auto order = hand.order(i);
