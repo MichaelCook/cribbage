@@ -169,10 +169,10 @@ constexpr bool is_space(char c) // std::isspace is not constexpr
     return c == ' ';
 }
 
-constexpr Hand make_hand(std::string_view hand) {
+constexpr Hand make_hand(std::string_view str) {
   Hand h;
   Rank rank = 0;
-  for (auto c : hand) {
+  for (auto c : str) {
     c = to_upper(c);
     switch (c) {
     case 'H':
@@ -180,7 +180,7 @@ constexpr Hand make_hand(std::string_view hand) {
     case 'S':
     case 'D':
       if (rank == 0)
-        throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
+        throw std::runtime_error("Malformed hand '" + std::string(str) + '\'');
       h.push(Card(rank, c));
       rank = 0;
       break;
@@ -198,7 +198,7 @@ constexpr Hand make_hand(std::string_view hand) {
     case 'Q':
     case 'K':
       if (rank != 0)
-        throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
+        throw std::runtime_error("Malformed hand '" + std::string(str) + '\'');
       rank = c;
       break;
     case '-':
@@ -206,11 +206,11 @@ constexpr Hand make_hand(std::string_view hand) {
     default:
       if (is_space(c))
         break;
-      throw std::runtime_error("Malformed hand '" + std::string(hand) + '\'');
+      throw std::runtime_error("Malformed hand '" + std::string(str) + '\'');
     }
   }
   if (rank != 0)
-      throw std::runtime_error("Malformed hand '" + std::string(hand));
+      throw std::runtime_error("Malformed hand '" + std::string(str));
   return h;
 }
 
@@ -448,7 +448,7 @@ concept ChoiceHandler = std::invocable<T, Hand const&>;
 
 template <ChoiceHandler T>
 constexpr
-void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
+void for_each_choice_internal(Hand const &hand, size_t offset, size_t num_choose,
                      Hand &chosen, T const &func) {
   if (chosen.size() == num_choose) {
     func(chosen);
@@ -457,7 +457,7 @@ void for_each_choice(Hand const &hand, size_t offset, size_t num_choose,
   while (offset != hand.size()) {
     chosen.push(hand.cards[offset]);
     ++offset;
-    for_each_choice(hand, offset, num_choose, chosen, func);
+    for_each_choice_internal(hand, offset, num_choose, chosen, func);
     chosen.pop();
   }
 }
@@ -466,7 +466,7 @@ template <ChoiceHandler T>
 constexpr
 void for_each_choice(Hand const &hand, size_t num_choose, T const &func) {
   Hand discard;
-  for_each_choice(hand, 0u, num_choose, discard, func);
+  for_each_choice_internal(hand, 0u, num_choose, discard, func);
 }
 
 constexpr Hand make_deck(Hand const &exclude) {
