@@ -15,8 +15,8 @@ rows.sort()
 
 fastest = rows[0][0]
 
-print('| Elapsed (s) | Normalized | Language |')
-print('| ----- | ----- | --- |')
+print('| Elapsed (s) | Normalized | Language   |')
+print('| ----------- | ---------- | ---------- |')
 
 for elapsed, language in rows:
-    print(f'| {elapsed:5.2f} | {elapsed / fastest:5.1f} | {language} |')
+    print(f'| {elapsed:11.2f} | {elapsed / fastest:10.1f} | {language:10} |')
