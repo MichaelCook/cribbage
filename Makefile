@@ -61,7 +61,7 @@ else
 endif
 
 .PHONY: all
-all: test-c test-rust test-cpp test-go test-typescript test-nim test-python
+all: mypy test-c test-rust test-cpp test-go test-typescript test-nim test-python
 ifdef TIMING
 	./format-timing $(TIMINGLOG)
 endif
@@ -129,3 +129,10 @@ timing:
 ifdef TIMING
 	true > $(TIMINGLOG)
 endif
+
+MYPY = python3 -m mypy
+
+.PHONY: mypy
+mypy:
+	$(MYPY) cribbage.py
+	$(MYPY) scores.py

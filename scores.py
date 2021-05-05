@@ -10,12 +10,13 @@
 # About 3 quarters of the time, you'll get either 0, 2, 4, 6 or 8 points.
 #
 
-import sys
-import math
+# pylint: disable=misplaced-comparison-constant
 
-suits = 'HCDS'
+from typing import List, Generator, Union
 
-rank_to_value = {
+SUITS = 'HCDS'
+
+RANK_TO_VALUE = {
     'A': 1,
     '2': 2,
     '3': 3,
@@ -31,7 +32,7 @@ rank_to_value = {
     'K': 10,
 }
 
-rank_to_order = {
+RANK_TO_ORDER = {
     'A': 1,
     '2': 2,
     '3': 3,
@@ -49,70 +50,70 @@ rank_to_order = {
 
 class Card:
 
-    def __init__(self, rank, suit):
-        assert rank in rank_to_value
-        assert suit in suits
+    def __init__(self, rank: str, suit: str) -> None:
+        assert rank in RANK_TO_VALUE
+        assert suit in SUITS
         self.rank = rank
         self.suit = suit
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.rank == other.rank and self.suit == other.suit
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.rank + self.suit
 
-    def order(self):
-        return rank_to_order[self.rank]
+    def order(self) -> int:
+        return RANK_TO_ORDER[self.rank]
 
 class Hand:
 
-    def __init__(self):
-        self.cards = []
+    def __init__(self) -> None:
+        self.cards: List[Card] = []
 
-    def value(self, i):
+    def value(self, i: int) -> int:
         r = self.cards[i].rank
-        return rank_to_value[r]
+        return RANK_TO_VALUE[r]
 
-    def size(self):
+    def size(self) -> int:
         return len(self.cards)
 
-    def push(self, card):
+    def push(self, card: Card) -> None:
         assert card not in self.cards
         self.cards.append(card)
 
-    def pop(self):
+    def pop(self) -> Card:
         return self.cards.pop()
 
-    def has(self, card):
+    def has(self, card: Card) -> bool:
         return card in self.cards
 
-    def __str__(self):
+    def __str__(self) -> str:
         return ' '.join(map(str, self.cards))
 
-    def copy(self):
+    def copy(self) -> 'Hand':
         h = Hand()
         h.cards = self.cards[:]
         return h
 
-def make_hand(s):
+def make_hand(s: str) -> Hand:
     hand = Hand()
     rank = None
 
     for c in s.upper():
-        if c in suits:
+        if c in SUITS:
             if rank is None:
                 raise Exception(f'Malformed hand: {s}')
             hand.push(Card(rank, c))
             rank = None
             continue
 
-        if c in rank_to_value:
+        if c in RANK_TO_VALUE:
             if rank is not None:
                 raise Exception(f'Malformed hand: {s}')
             rank = c
             continue
 
-        if c != ' ' and c != '-':
+        if c not in ' -':
             raise Exception(f'Malformed hand: {s}')
 
     if rank is not None:
@@ -124,7 +125,7 @@ assert '5H 5C 5S JD 5D' == str(make_hand('5H 5C 5S JD 5D'))
 assert '5H 5C 5S JD 5D' == str(make_hand('5h5c5sjd5d'))
 assert 'AH AS JH AC AD' == str(make_hand('ah-as-jh-ac-ad'))
 
-def score_15s(hand):
+def score_15s(hand: Hand) -> int:
     assert hand.size() == 5
 
     a = hand.value(0)
@@ -202,7 +203,7 @@ assert 8 == score_15s(make_hand('5H 2H 3H JH QH'))
 assert 16 == score_15s(make_hand('5H 5S 5C 5D TH'))
 assert 8 == score_15s(make_hand('6C 6D 4D 4S 5D'))
 
-def score_pairs(hand):
+def score_pairs(hand: Hand) -> int:
     num_pairs = 0
     for ai, a in enumerate(hand.cards):
         for b in hand.cards[ai+1:]:
@@ -215,7 +216,7 @@ assert 8 == score_pairs(make_hand('TS 5S 5C 5D TH'))
 assert 4 == score_pairs(make_hand('6C 6D 4D 4S 5D'))
 
 X = -1 # match any rank
-run_patterns = (
+RUN_PATTERNS = (
     # (score, (deltas...)),
     (12, (0, 1, 1, 0)), # AA233
     ( 9, (1, 1, 0, 0)), # A2333
@@ -239,7 +240,7 @@ run_patterns = (
     ( 3, (1, 1, X, X)), # A23xx
 )
 
-def score_runs(hand):
+def score_runs(hand: Hand) -> int:
     assert hand.size() == 5
 
     # Make a sorted sequence of the orders of the cards in the hand.  The
@@ -250,7 +251,7 @@ def score_runs(hand):
 
     # Compare the sorted hand to the patterns.  Look at the difference between
     # the two cards in each pair of adjacent cards.  Stop at the first match.
-    for score, deltas in run_patterns:
+    for score, deltas in RUN_PATTERNS:
         previous = orders[0]
         j = 0
         while True:
@@ -287,7 +288,7 @@ assert 3 == score_runs(make_hand('AH 2H 3H JH TH'))
 assert 0 == score_runs(make_hand('AH 8H 3H JH TH'))
 assert 12 == score_runs(make_hand('6C 6D 4D 4S 5D'))
 
-def score_flush(hand, is_crib):
+def score_flush(hand: Hand, is_crib: bool) -> int:
     assert hand.size() == 5
     suit = hand.cards[0].suit
     for card in hand.cards[1:4]:
@@ -306,7 +307,7 @@ assert 4 == score_flush(make_hand('5H 6H 7H 8H 9D'), False)
 assert 0 == score_flush(make_hand('5H 6H 7H 8H 9D'), True)
 assert 0 == score_flush(make_hand('5H 6H 7H 8D 9D'), False)
 
-def score_nobs(hand):
+def score_nobs(hand: Hand) -> int:
     # nobs: one point for the Jack of the same suit as the cut card
     assert hand.size() == 5
     cut_suit = hand.cards[4].suit
@@ -318,7 +319,7 @@ def score_nobs(hand):
 assert 1 == score_nobs(make_hand('JH 2C 3C 4C 5H'))
 assert 0 == score_nobs(make_hand('JH 2C 3C 4C 5C'))
 
-def score_hand(hand, is_crib):
+def score_hand(hand: Union[Hand, str], is_crib: bool) -> int:
     if isinstance(hand, str):
         hand = make_hand(hand)
     return score_15s(hand) + \
@@ -347,10 +348,10 @@ assert 24 == score_hand('6C 4D 6D 4S 5D', False)
 # Iterate over all of the ways of choosing `num_choose` cards
 # from the given hand `hand`.
 # TODO: should simply replace this with itertools.combinations
-def choose(hand, num_choose):
+def choose(hand: Hand, num_choose: int) -> Generator[Hand, None, None]:
     chosen = Hand()
     i = 0
-    i_stack = []
+    i_stack: List[int] = []
 
     while True:
         if chosen.size() == num_choose:
@@ -367,16 +368,16 @@ def choose(hand, num_choose):
         else:
             break
 
-def make_deck():
+def make_deck() -> Hand:
     # Make an entire deck of cards
     deck = Hand()
-    for suit in suits:
-        for rank in rank_to_value:
+    for suit in SUITS:
+        for rank in RANK_TO_VALUE:
             card = Card(rank, suit)
             deck.push(card)
     return deck
 
-def main():
+def main() -> None:
     deck = make_deck()
     scores = [0] * 30    # 0..29
     for hand in choose(deck, 4):
@@ -390,8 +391,8 @@ def main():
     num_hands = sum(scores)
     for score, count in enumerate(scores):
         perc = count * 100 / num_hands
-        hash = '|' * round(4 * perc)
-        print(f'{score:2} {count:8} {perc:6.2f}% {hash}')
+        hashmarks = '|' * round(4 * perc)
+        print(f'{score:2} {count:8} {perc:6.2f}% {hashmarks}')
     print(f'   {num_hands:8} 100.00%')
 
 main()
