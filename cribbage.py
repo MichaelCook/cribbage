@@ -13,11 +13,11 @@ import math
 
 # pylint: disable=misplaced-comparison-constant
 
-from typing import List, Generator, Union
+from typing import List, Generator, Union, Final
 
-SUITS = 'HCDS'
+SUITS: Final = 'HCDS'
 
-RANK_TO_VALUE = {
+RANK_TO_VALUE: Final = {
     'A': 1,
     '2': 2,
     '3': 3,
@@ -33,7 +33,7 @@ RANK_TO_VALUE = {
     'K': 10,
 }
 
-RANK_TO_ORDER = {
+RANK_TO_ORDER: Final = {
     'A': 1,
     '2': 2,
     '3': 3,
@@ -216,8 +216,8 @@ assert 12 == score_pairs(make_hand('5H 5S 5C 5D TH'))
 assert 8 == score_pairs(make_hand('TS 5S 5C 5D TH'))
 assert 4 == score_pairs(make_hand('6C 6D 4D 4S 5D'))
 
-X = -1 # match any rank
-RUN_PATTERNS = (
+X: Final = -1 # match any rank
+RUN_PATTERNS: Final = (
     # (score, (deltas...)),
     (12, (0, 1, 1, 0)), # AA233
     ( 9, (1, 1, 0, 0)), # A2333
@@ -379,9 +379,9 @@ def make_deck(exclude: Hand) -> Hand:
                 deck.push(card)
     return deck
 
-MAX_SCORE = 29 + 24  # 29 in hand, 24 in crib (44665)
-MIN_SCORE = -29      # 0 in hand, 29 in opp crib
-NUM_SCORES = MAX_SCORE - MIN_SCORE + 1
+MAX_SCORE: Final = 29 + 24  # 29 in hand, 24 in crib (44665)
+MIN_SCORE: Final = -29      # 0 in hand, 29 in opp crib
+NUM_SCORES: Final = MAX_SCORE - MIN_SCORE + 1
 
 class Tally:
 
