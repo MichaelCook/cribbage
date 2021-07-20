@@ -1,0 +1,11 @@
+#!/bin/bash
+make clean
+shellquote -x make cribbage-cpp DEBUG=1 || exit
+shellquote -x ./cribbage-cpp 5S-4D-JD-4C-5C-5H || exit
+
+make clean
+shellquote -x make cribbage-cpp || exit
+
+for i in $(seq 10); do
+    /bin/time --format='%e' ./cribbage-cpp 5S-4D-JD-4C-5C-5H >/dev/null
+done
