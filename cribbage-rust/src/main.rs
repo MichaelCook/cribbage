@@ -327,7 +327,7 @@ fn score_runs(hand: &Hand) -> i32 {
     struct Pattern {
         score: i32,
         delta: [i32; 4],
-    };
+    }
     let x = -1; // match any rank
     let patterns = [
         Pattern{score: 12, delta: [ 0, 1, 1, 0 ]}, // AA233
@@ -633,7 +633,7 @@ fn main() {
     for arg in args[1..].iter() {
         let hand = Hand::make(&arg);
         if hand.num_cards() != 6 {
-            panic!("Wrong number of cards in hand: {hand}");
+            panic!("Wrong number of cards in hand: {}", hand);
         }
         println!("[ {} ]", hand);
         analyze_hand(&hand);

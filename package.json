@@ -5,6 +5,6 @@
         "url": "https://github.com/MichaelCook/cribbage.git"
     },
     "dependencies": {
-        "@types/node": "^14.14.25"
+        "@types/node": "^14.17.12"
     }
 }
