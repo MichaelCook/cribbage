@@ -12,12 +12,13 @@ This repo contains implementations in multiple computer languages:
 * Python
 * Rust
 * TypeScript
+* Julia
 
-### Example Output
+## Example Output
 
 Here's a sample run:
 
-```
+```shell
 $ ./cribbage-cpp "7C 9H 5H 5C 5D JS"
 [ 7C 9H 5H 5C 5D JS ]
 7C 9H [21.8 1.1 0..29] [13.4 1.0 0..29]
@@ -39,7 +40,7 @@ $ ./cribbage-cpp "7C 9H 5H 5C 5D JS"
 
 For example:
 
-```
+```shell
 7C 9H [21.8 1.1 0..29] [13.4 1.0 0..29]
 ```
 
@@ -52,21 +53,22 @@ deviation, minimum and maximum scores.  The first set of numbers is for when
 the crib is yours; the second set, the crib is your opponent's.  (A smaller
 standard deviation means you're more likely to get the average score.)
 
-### Performance
+## Performance
 
-| Elapsed (s) | Normalized | Language |
-| ----- | ----- | --- |
-|  0.69 |   1.0 | c |
-|  0.93 |   1.5 | cpp |
-|  1.04 |   1.5 | rust |
-|  6.37 |   9.2 | typescript |
-|  6.93 |  10.0 | go |
-| 49.50 |  71.7 | nim |
-| 120.57 | 174.7 | python |
+| Elapsed (s) | Normalized | Language   |
+| ----------- | ---------- | ---------- |
+|        0.69 |        1.0 | c          |
+|        1.12 |        1.6 | rust       |
+|        1.13 |        1.6 | cpp        |
+|        3.68 |        5.3 | julia      |
+|        6.62 |        9.6 | typescript |
+|        6.82 |        9.9 | go         |
+|       50.43 |       73.1 | nim        |
+|      114.03 |      165.3 | python     |
 
-### Run All
+## Run All
 
-```
+```shell
 $ make TIMING=
 ./cribbage-c 5H-5C-5S-JD-4C-4D
 [ 5H 5C 5S JD 4C 4D ]

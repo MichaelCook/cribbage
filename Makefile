@@ -61,7 +61,7 @@ else
 endif
 
 .PHONY: all
-all: mypy test-c test-rust test-cpp test-go test-typescript test-nim test-python
+all: mypy test-c test-rust test-cpp test-go test-typescript test-nim test-python test-julia
 ifdef TIMING
 	./format-timing $(TIMINGLOG)
 endif
@@ -106,6 +106,11 @@ test-nim: cribbage-nim timing
 .PHONY: test-python
 test-python: timing
 	$(TIMING) ./cribbage.py $(HAND)
+
+# TODO: compile cribbage.jl first, then do timing measurements
+.PHONY: test-julia
+test-julia: timing
+	$(TIMING) ./cribbage.jl $(HAND)
 
 .PHONY: test-go
 test-go: cribbage-go timing
