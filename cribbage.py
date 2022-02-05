@@ -13,7 +13,7 @@ import math
 
 # pylint: disable=misplaced-comparison-constant
 
-from typing import List, Generator, Union, Final
+from typing import List, Generator, Final
 
 SUITS: Final = 'HCDS'
 
@@ -320,7 +320,7 @@ def score_nobs(hand: Hand) -> int:
 assert 1 == score_nobs(make_hand('JH 2C 3C 4C 5H'))
 assert 0 == score_nobs(make_hand('JH 2C 3C 4C 5C'))
 
-def score_hand(hand: Union[Hand, str], is_crib: bool) -> int:
+def score_hand(hand: Hand | str, is_crib: bool) -> int:
     if isinstance(hand, str):
         hand = make_hand(hand)
     return score_15s(hand) + \
