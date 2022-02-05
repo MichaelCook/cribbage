@@ -234,7 +234,7 @@ constexpr Hand make_hand(std::string_view str) {
     }
   }
   if (rank_char != 0)
-      throw std::runtime_error("Malformed hand '" + std::string(str));
+      throw std::runtime_error("Malformed hand '" + std::string(str) + '\'');
   return h;
 }
 
