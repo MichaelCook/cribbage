@@ -8,6 +8,7 @@ CFLAGS = \
   -Wno-format-nonliteral \
   -Wno-disabled-macro-expansion \
   -Wno-padded \
+  -Wno-reserved-identifier \
   -std=c2x \
 
 CXX = g++-10
