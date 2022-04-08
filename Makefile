@@ -62,7 +62,7 @@ else
 endif
 
 .PHONY: all
-all: mypy test-c test-rust test-cpp test-go test-typescript test-nim test-python test-julia
+all: check-py test-c test-rust test-cpp test-go test-typescript test-nim test-python test-julia
 ifdef TIMING
 	./format-timing $(TIMINGLOG)
 endif
@@ -105,7 +105,7 @@ test-nim: cribbage-nim timing
 	$(TIMING) ./cribbage-nim $(HAND)
 
 .PHONY: test-python
-test-python: timing
+test-python: timing check-py
 	$(TIMING) ./cribbage.py $(HAND)
 
 # TODO: compile cribbage.jl first, then do timing measurements
@@ -136,9 +136,15 @@ ifdef TIMING
 	true > $(TIMINGLOG)
 endif
 
-MYPY = python3 -m mypy
+# $1 - name of a Python script
+# $2 - any additional modules to include in the analysis
+define check-py
+$1.check-py~: $1 $2
+	python3 -m mypy --strict --no-error-summary $1 $2
+	python3 -m flake8 --config ~/.config/flake8 $1
+	touch $$@
+check-py: $1.check-py~
+endef
 
-.PHONY: mypy
-mypy:
-	$(MYPY) cribbage.py
-	$(MYPY) scores.py
+$(eval $(call check-py, cribbage.py))
+$(eval $(call check-py, scores.py))

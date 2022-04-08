@@ -56,7 +56,7 @@ class Card:
         self.rank = rank
         self.suit = suit
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: 'Card') -> bool:  # type: ignore
         return self.rank == other.rank and self.suit == other.suit
 
     def __str__(self) -> str:
@@ -215,29 +215,29 @@ assert 12 == score_pairs(make_hand('5H 5S 5C 5D TH'))
 assert 8 == score_pairs(make_hand('TS 5S 5C 5D TH'))
 assert 4 == score_pairs(make_hand('6C 6D 4D 4S 5D'))
 
-X: Final = -1 # match any rank
+X: Final = -1  # match any rank
 RUN_PATTERNS: Final = (
     # (score, (deltas...)),
-    (12, (0, 1, 1, 0)), # AA233
-    ( 9, (1, 1, 0, 0)), # A2333
-    ( 9, (1, 0, 0, 1)), # A2223
-    ( 9, (0, 0, 1, 1)), # AAA23
-    ( 8, (1, 1, 1, 0)), # A2344
-    ( 8, (1, 1, 0, 1)), # A2334
-    ( 8, (1, 0, 1, 1)), # A2234
-    ( 8, (0, 1, 1, 1)), # AA234
-    ( 6, (X, 1, 1, 0)), # xA233
-    ( 6, (X, 1, 0, 1)), # xA223
-    ( 6, (X, 0, 1, 1)), # xAA23
-    ( 6, (1, 1, 0, X)), # A233x
-    ( 6, (1, 0, 1, X)), # A223x
-    ( 6, (0, 1, 1, X)), # AA23x
-    ( 5, (1, 1, 1, 1)), # A2345
-    ( 4, (X, 1, 1, 1)), # xA234
-    ( 4, (1, 1, 1, X)), # A234x
-    ( 3, (X, X, 1, 1)), # xxA23
-    ( 3, (X, 1, 1, X)), # xA23x
-    ( 3, (1, 1, X, X)), # A23xx
+    (12, (0, 1, 1, 0)),  # AA233
+    ( 9, (1, 1, 0, 0)),  # A2333    # noqa: E201 whitespace after '('
+    ( 9, (1, 0, 0, 1)),  # A2223    # noqa: E201
+    ( 9, (0, 0, 1, 1)),  # AAA23    # noqa: E201
+    ( 8, (1, 1, 1, 0)),  # A2344    # noqa: E201
+    ( 8, (1, 1, 0, 1)),  # A2334    # noqa: E201
+    ( 8, (1, 0, 1, 1)),  # A2234    # noqa: E201
+    ( 8, (0, 1, 1, 1)),  # AA234    # noqa: E201
+    ( 6, (X, 1, 1, 0)),  # xA233    # noqa: E201
+    ( 6, (X, 1, 0, 1)),  # xA223    # noqa: E201
+    ( 6, (X, 0, 1, 1)),  # xAA23    # noqa: E201
+    ( 6, (1, 1, 0, X)),  # A233x    # noqa: E201
+    ( 6, (1, 0, 1, X)),  # A223x    # noqa: E201
+    ( 6, (0, 1, 1, X)),  # AA23x    # noqa: E201
+    ( 5, (1, 1, 1, 1)),  # A2345    # noqa: E201
+    ( 4, (X, 1, 1, 1)),  # xA234    # noqa: E201
+    ( 4, (1, 1, 1, X)),  # A234x    # noqa: E201
+    ( 3, (X, X, 1, 1)),  # xxA23    # noqa: E201
+    ( 3, (X, 1, 1, X)),  # xA23x    # noqa: E201
+    ( 3, (1, 1, X, X)),  # A23xx    # noqa: E201
 )
 
 def score_runs(hand: Hand) -> int:
@@ -328,17 +328,17 @@ def score_hand(hand: Hand | str, is_crib: bool) -> int:
         score_flush(hand, is_crib) + \
         score_nobs(hand)
 
-assert 12 == score_hand('AH AS JH AC AD', False) # 4oak ("of a kind")
-assert 13 == score_hand('AH AS JD AC AD', False) # ...plus right jack
-assert  5 == score_hand('AH 3H 7H TH JH', False) # 5 hearts
-assert  5 == score_hand('AH 3H 7H TH JH', True)  # 5 hearts but crib
-assert  4 == score_hand('AH 3H 7H TH JS', False) # 4 hearts
-assert  0 == score_hand('AH 3H 7S TH JH', False) # 4 hearts but with cut
-assert  0 == score_hand('AH 3H 7H TH JS', True)  # 4 hearts but crib
-assert  7 == score_hand('AH 2S 3C 5D JH', False) # 15/4 + run/3
-assert 20 == score_hand('7H 7S 7C 8D 8H', False) # 15/12 + 3oak + 2oak
-assert 15 == score_hand('AH 2H 3H 3S 3D', False) # triple run/3
-assert 15 == score_hand('3H AH 3S 2H 3D', False) # triple run/3
+assert 12 == score_hand('AH AS JH AC AD', False)  # 4oak ("of a kind")
+assert 13 == score_hand('AH AS JD AC AD', False)  # ...plus right jack
+assert 5 == score_hand('AH 3H 7H TH JH', False)   # 5 hearts
+assert 5 == score_hand('AH 3H 7H TH JH', True)    # 5 hearts but crib
+assert 4 == score_hand('AH 3H 7H TH JS', False)   # 4 hearts
+assert 0 == score_hand('AH 3H 7S TH JH', False)   # 4 hearts but with cut
+assert 0 == score_hand('AH 3H 7H TH JS', True)    # 4 hearts but crib
+assert 7 == score_hand('AH 2S 3C 5D JH', False)   # 15/4 + run/3
+assert 20 == score_hand('7H 7S 7C 8D 8H', False)  # 15/12 + 3oak + 2oak
+assert 15 == score_hand('AH 2H 3H 3S 3D', False)  # triple run/3
+assert 15 == score_hand('3H AH 3S 2H 3D', False)  # triple run/3
 assert 29 == score_hand('5H 5C 5S JD 5D', False)
 assert 28 == score_hand('5H 5C 5S 5D JD', False)
 assert 24 == score_hand('6C 4D 6D 4S 5D', False)
