@@ -10,9 +10,6 @@
 
 import sys
 import math
-
-# pylint: disable=misplaced-comparison-constant
-
 from typing import List, Generator, Final
 
 SUITS: Final = 'HCDS'
@@ -89,7 +86,7 @@ class Hand:
         return card in self.cards
 
     def __str__(self) -> str:
-        return ' '.join(map(str, self.cards))
+        return ' '.join(str(card) for card in self.cards)
 
     def copy(self) -> 'Hand':
         h = Hand()
@@ -103,22 +100,22 @@ def make_hand(s: str) -> Hand:
     for c in s.upper():
         if c in SUITS:
             if rank is None:
-                raise Exception(f'Malformed hand: {s}')
+                raise RuntimeError(f'Malformed hand: {s}')
             hand.push(Card(rank, c))
             rank = None
             continue
 
         if c in RANK_TO_VALUE:
             if rank is not None:
-                raise Exception(f'Malformed hand: {s}')
+                raise RuntimeError(f'Malformed hand: {s}')
             rank = c
             continue
 
         if c not in ' -':
-            raise Exception(f'Malformed hand: {s}')
+            raise RuntimeError(f'Malformed hand: {s}')
 
     if rank is not None:
-        raise Exception(f'Malformed hand: {s}')
+        raise RuntimeError(f'Malformed hand: {s}')
 
     return hand
 
@@ -247,7 +244,7 @@ def score_runs(hand: Hand) -> int:
     # Make a sorted sequence of the orders of the cards in the hand.  The
     # order of Ace is 1, Two is 2, ..., Ten is 10, Jack is 11, Queen is 12,
     # King is 13.
-    orders = list(map(lambda card: card.order(), hand.cards))
+    orders = list(card.order() for card in hand.cards)
     orders.sort()
 
     # Compare the sorted hand to the patterns.  Look at the difference between
@@ -258,7 +255,7 @@ def score_runs(hand: Hand) -> int:
         while True:
             delta = deltas[j]
             order = orders[j + 1]
-            if delta != X and delta != order - previous:
+            if delta not in (X, order - previous):
                 break
             previous = order
             j += 1
@@ -348,7 +345,7 @@ assert 24 == score_hand('6C 4D 6D 4S 5D', False)
 
 # Iterate over all of the ways of choosing `num_choose` cards
 # from the given hand `hand`.
-# TODO: should simply replace this with itertools.combinations
+# TODO: Should simply replace this with itertools.combinations
 def choose(hand: Hand, num_choose: int) -> Generator[Hand, None, None]:
     chosen = Hand()
     i = 0
@@ -457,7 +454,7 @@ def analyze_hand(hand: Hand) -> None:
             assert len(crib.cards) == 4
 
             for cut in deck.cards:
-                if cut == card1 or cut == card2:
+                if cut in (card1, card2):
                     continue
 
                 hold.push(cut)
@@ -491,7 +488,7 @@ def main() -> None:
     for arg in sys.argv[1:]:
         hand = make_hand(arg)
         if hand.size() != 6:
-            raise Exception(f'Wrong number of cards in hand: {hand}')
+            raise RuntimeError(f'Wrong number of cards in hand: {hand}')
 
         print(f'[ {hand} ]')
         analyze_hand(hand)
