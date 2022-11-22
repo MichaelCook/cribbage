@@ -10,7 +10,8 @@
 
 import sys
 import math
-from typing import List, Generator, Final
+from typing import Final
+from collections.abc import Generator
 
 SUITS: Final = 'HCDS'
 
@@ -57,6 +58,9 @@ class Card:
     def __eq__(self, other: 'Card') -> bool:  # type: ignore
         return self.rank == other.rank and self.suit == other.suit
 
+    def __hash__(self) -> int:
+        return hash((self.rank, self.suit))
+
     def __str__(self) -> str:
         return self.rank + self.suit
 
@@ -66,7 +70,7 @@ class Card:
 class Hand:
 
     def __init__(self) -> None:
-        self.cards: List[Card] = []
+        self.cards: list[Card] = []
 
     def value(self, i: int) -> int:
         r = self.cards[i].rank
@@ -119,6 +123,7 @@ def make_hand(s: str) -> Hand:
 
     return hand
 
+# pylint: disable=misplaced-comparison-constant
 assert '5H 5C 5S JD 5D' == str(make_hand('5H 5C 5S JD 5D'))
 assert '5H 5C 5S JD 5D' == str(make_hand('5h5c5sjd5d'))
 assert 'AH AS JH AC AD' == str(make_hand('ah-as-jh-ac-ad'))
@@ -309,9 +314,8 @@ def score_nobs(hand: Hand) -> int:
     # nobs: one point for the Jack of the same suit as the cut card
     assert hand.size() == 5
     cut_suit = hand.cards[4].suit
-    for card in hand.cards[:4]:
-        if card.rank == 'J' and card.suit == cut_suit:
-            return 1
+    if any(card.rank == 'J' and card.suit == cut_suit for card in hand.cards[:4]):
+        return 1
     return 0
 
 assert 1 == score_nobs(make_hand('JH 2C 3C 4C 5H'))
@@ -349,7 +353,7 @@ assert 24 == score_hand('6C 4D 6D 4S 5D', False)
 def choose(hand: Hand, num_choose: int) -> Generator[Hand, None, None]:
     chosen = Hand()
     i = 0
-    i_stack: List[int] = []
+    i_stack: list[int] = []
 
     while True:
         if chosen.size() == num_choose:
@@ -494,4 +498,5 @@ def main() -> None:
         analyze_hand(hand)
         print()
 
-main()
+if __name__ == '__main__':
+    main()
