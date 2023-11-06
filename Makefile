@@ -127,8 +127,7 @@ test-typescript: cribbage.js timing
 
 .PHONY: clean
 clean:
-	rm -rf cribbage-nim cribbage-c cribbage-cpp cribbage-go cribbage.js node_modules cribbage-rust/Cargo.lock $(TIMINGLOG)
-	cd cribbage-rust && cargo clean
+	git clean -fdX -e '!*~' .
 
 .PHONY: timing
 timing:
@@ -140,8 +139,9 @@ endif
 # $2 - any additional modules to include in the analysis
 define check-py
 $1.check-py~: $1 $2
-	python3 -m mypy --strict --no-error-summary $1 $2
-	python3 -m flake8 --config ~/.config/flake8 $1
+	mypy --strict --no-error-summary $1 $2
+	pylint --enable-all-extensions --rcfile ~/lib/pylint.config $1 $2
+	flake8 --color=never --config ~/lib/flake8.config $1 $2
 	touch $$@
 check-py: $1.check-py~
 endef
