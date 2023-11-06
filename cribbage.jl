@@ -1,4 +1,4 @@
-#!/bin/julia
+#!/usr/bin/env julia
 
 import Printf.@printf
 using Combinatorics
