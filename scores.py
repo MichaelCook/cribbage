@@ -209,7 +209,7 @@ assert 8 == score_15s(make_hand('6C 6D 4D 4S 5D'))
 def score_pairs(hand: Hand) -> int:
     num_pairs = 0
     for ai, a in enumerate(hand.cards):
-        for b in hand.cards[ai+1:]:
+        for b in hand.cards[ai + 1:]:
             if a.rank == b.rank:
                 num_pairs += 1
     return 2 * num_pairs
