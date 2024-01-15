@@ -61,6 +61,10 @@ else
   HAND = 5S-4D-JD-4C-5C-5H
 endif
 
+.PHONY: default
+default:
+	echo "Use 'make all' to build everything and run the tests"
+
 .PHONY: all
 all: check-py test-c test-rust test-cpp test-go test-typescript test-nim test-python test-julia
 ifdef TIMING
