@@ -8,6 +8,7 @@
 # to the crib to maximize your chances of getting the best score?
 #
 
+from __future__ import annotations
 import sys
 import math
 from typing import Final
@@ -92,7 +93,7 @@ class Hand:
     def __str__(self) -> str:
         return ' '.join(str(card) for card in self.cards)
 
-    def copy(self) -> 'Hand':
+    def copy(self) -> Hand:
         h = Hand()
         h.cards = self.cards[:]
         return h

@@ -10,6 +10,7 @@
 # About 3 quarters of the time, you'll get either 0, 2, 4, 6 or 8 points.
 #
 
+from __future__ import annotations
 from typing import Final
 from collections.abc import Generator
 
@@ -92,7 +93,7 @@ class Hand:
     def __str__(self) -> str:
         return ' '.join(str(card) for card in self.cards)
 
-    def copy(self) -> 'Hand':
+    def copy(self) -> Hand:
         h = Hand()
         h.cards = self.cards[:]
         return h
